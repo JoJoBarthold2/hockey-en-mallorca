@@ -67,7 +67,7 @@ def load_stats(env_name):
 def save_test_results(env_name, test_rewards, name = "test_results", save_figure = True):
 
     os.makedirs(f"{env_name}/stats/pkl", exist_ok=True)
-    test_path = os.path.join(f"{env_name}/stats/pkl", name)
+    test_path = os.path.join(f"{env_name}/stats/pkl", f"{name}.pkl")
 
     with open(test_path, "wb") as f:
         pickle.dump(test_rewards, f)
@@ -77,7 +77,13 @@ def save_test_results(env_name, test_rewards, name = "test_results", save_figure
     plt.xlabel("Test Episode")
     plt.ylabel("Total Reward")
     plt.title("Test Performance")
-    #plt.show()
 
     if save_figure:
         _save_plot(env_name, name)
+
+def load_test_stats(env_name):
+    stats_path = os.path.join(f"{env_name}/stats/pkl", "test_results.pkl")
+
+    with open(stats_path, "rb") as f:
+        loaded_stats = pickle.load(f)
+    return loaded_stats

@@ -16,7 +16,7 @@ class DiscreteActionWrapper(gym.ActionWrapper):
         self.action_space = spaces.Discrete(self.bins)
 
     def action(self, action):
-        """ discrete actions from low to high in 'bins'
+        """ discrete actions from low to high in "bins"
         Args:
             action: The discrete action
         Returns:
