@@ -33,7 +33,17 @@ class QFunction(Feedforward):
         return loss.item()
 
     def Q_value(self, states, actions):
-        return self.forward(states).gather(1, actions[:,None])        
+
+        """print("States type:", type(states), "Shape:", states.shape)
+        print("Actions type:", type(actions), "Shape:", actions.shape, "Dtype:", actions.dtype)
+
+        # Mostrar el contenido de la primera fila de cada variable
+        print("First state:", states[0].tolist())  # Convertir a lista para mejor legibilidad
+        print("First action:", actions[0].tolist())
+
+        print("Output shape from forward:", self.forward(states).shape)"""
+
+        return self.forward(states).gather(1, actions[:,None])
     
     def maxQ(self, states):
         return np.max(self.predict(states), axis=-1, keepdims=True)

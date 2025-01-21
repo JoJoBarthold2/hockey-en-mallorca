@@ -9,7 +9,7 @@ from Dueling_DQN_Agent.QFunction import QFunction
 
 class Dueling_DQN_Agent(object):
 
-    def __init__(self, state_space, action_space, num_actions, **userconfig):
+    def __init__(self, state_space, action_space, **userconfig):
         
         """if not isinstance(state_space, spaces.box.Box):
             raise hc.UnsupportedSpace("Observation space {} incompatible with {}. (Require: Box)".format(state_space, self))
@@ -18,7 +18,7 @@ class Dueling_DQN_Agent(object):
         
         self._state_space = state_space
         self._action_space = action_space
-        self._action_n = num_actions
+        self._action_n = action_space.n
 
         self.train_iter = 0
 
@@ -76,7 +76,7 @@ class Dueling_DQN_Agent(object):
             action = self.Q.greedyAction(state)
         else: 
             action = self._action_space.sample()
-        print(f"action: {action}, shape: {np.asarray(action).shape}")           
+        #print(f"action: {action}, shape: {np.asarray(action).shape}")           
         return action
 
     def _perform_epsilon_decay(self):
