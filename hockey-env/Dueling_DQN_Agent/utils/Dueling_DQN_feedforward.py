@@ -2,7 +2,7 @@ import torch
 import numpy as np
 
 class Feedforward(torch.nn.Module):
-    def __init__(self, input_size, hidden_sizes, output_size):
+    def __init__(self, input_size, hidden_sizes, output_size, value_hidden_sizes = None, advantage_hidden_sizes = None):
         super(Feedforward, self).__init__()
         self.input_size = input_size
         self.hidden_sizes  = hidden_sizes

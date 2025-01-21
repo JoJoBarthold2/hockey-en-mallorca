@@ -6,7 +6,7 @@ from Dueling_DQN_Agent.utils.Dueling_DQN_feedforward import Feedforward
 
 class QFunction(Feedforward):
 
-    def __init__(self, state_dim, action_dim, hidden_sizes=[128,128], learning_rate = 0.0002):
+    def __init__(self, state_dim, action_dim, hidden_sizes=[128,128], value_hidden_sizes = None, advantage_hidden_sizes = None, learning_rate = 0.0002):
 
         super().__init__(input_size=state_dim, hidden_sizes=hidden_sizes, output_size=action_dim)
 

@@ -1,9 +1,9 @@
-from gymnasium import spaces
+#from gymnasium import spaces
 import random
 import numpy as np
 import torch
 
-import Dueling_DQN_Agent.utils.help_classes as hc
+#import Dueling_DQN_Agent.utils.help_classes as hc
 import Dueling_DQN_Agent.utils.memory as mem
 from Dueling_DQN_Agent.QFunction import QFunction
 
@@ -34,7 +34,10 @@ class Dueling_DQN_Agent(object):
             "eps_decay_mode": "exponential",
             "eps_min": 0.01,
             "eps_decay": 0.995,
-            "seed": int(random.random())
+            "seed": int(random.random()),
+            "hidden_sizes": [128,128],
+            "value_hidden_sizes": None,
+            "advantage_hidden_sizes": None
         }
 
         self._config.update(userconfig)
@@ -56,12 +59,18 @@ class Dueling_DQN_Agent(object):
         # Q Network
         self.Q = QFunction(state_dim=self._state_space.shape[0], 
                            action_dim=self._action_n,
-                           learning_rate = self._config["learning_rate"])
+                           learning_rate = self._config["learning_rate"],
+                           hidden_sizes = self._config["hidden_sizes"],
+                           value_hidden_sizes = self._config["value_hidden_sizes"],
+                           advantage_hidden_sizes = self._config["advantage_hidden_sizes"])
         
         # Q Target
         self.Q_target = QFunction(state_dim=self._state_space.shape[0], 
                                   action_dim=self._action_n,
-                                  learning_rate = 0)    # We do not want to train the Target Function, only copy the weights of the Q Network
+                                  learning_rate = 0,    # We do not want to train the Target Function, only copy the weights of the Q Network
+                                  hidden_sizes = self._config["hidden_sizes"],
+                                  value_hidden_sizes = self._config["value_hidden_sizes"],
+                                  advantage_hidden_sizes = self._config["advantage_hidden_sizes"])    # We do not want to train the Target Function, only copy the weights of the Q Network
         self._update_target_net()
 
     def _update_target_net(self):        
