@@ -61,11 +61,10 @@ for episode in range(max_episodes):
     if episode % 100 == 0:    
         losses.extend(loss)
         stats.append([episode, total_reward, t + 1])
+        print(f"Episode {episode+1}/{max_episodes}, Total Reward: {total_reward}")
     
     if agent._config["use_eps_decay"] and episode > int(0.5 * max_episodes):
-        agent._perform_epsilon_decay()
-
-    print(f"Episode {episode+1}/{max_episodes}, Total Reward: {total_reward}")
+        agent._perform_epsilon_decay()  
         
     if ((episode) % int(max_episodes/10) == 0) and episode > 0:
         agent.Q.save(env_name, name = f"episode_{episode}")
