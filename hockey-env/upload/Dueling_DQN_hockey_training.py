@@ -11,7 +11,7 @@ SEEDS_TEST = [291, 292, 293, 294, 295]
 seed = SEED_TRAIN_1
 
 reload(h_env)
-env_name = "Hockey_30000_20000_(128_128)"
+env_name = "Hockey_Test_1_(128_128)"
 env = h_env.HockeyEnv()
 
 # Initialize the agent with the correct state/action space
@@ -24,7 +24,7 @@ opponent = h_env.BasicOpponent()
 stats = []
 losses = []
 
-max_episodes = 30000
+max_episodes = 100
 train_iterations = 32  # Number of training steps per episode
 
 max_steps = 20000
@@ -57,10 +57,9 @@ for episode in range(max_episodes):
         obs_agent2 = env.obs_agent_two()
 
         if done or truncated: break
-    loss = agent.train(train_iterations)
-    if episode % 10 == 0:    
-        losses.extend(loss)
-        stats.append([episode, total_reward, t + 1])
+        
+    losses.extend(agent.train(train_iterations))
+    stats.append([episode, total_reward, t + 1])
     
     if agent._config["use_eps_decay"] and episode > int(0.5 * max_episodes):
         agent._perform_epsilon_decay()
