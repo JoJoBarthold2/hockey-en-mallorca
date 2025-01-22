@@ -18,16 +18,16 @@ env = h_env.HockeyEnv()
 state_space = env.observation_space
 action_space = env.discrete_action_space
 
-agent = Dueling_DQN_Agent(state_space, action_space, seed = seed, use_eps_decay = True) 
+agent = Dueling_DQN_Agent(state_space, action_space, seed = seed, use_eps_decay = True, hidden_sizes = [256, 256, 128]) 
 opponent = h_env.BasicOpponent()
 
 stats = []
 losses = []
 
-max_episodes = 30000
+max_episodes = 100000
 train_iterations = 32  # Number of training steps per episode
 
-max_steps = 20000
+max_steps = 30000
 
 for episode in range(max_episodes):
 
@@ -58,7 +58,7 @@ for episode in range(max_episodes):
 
         if done or truncated: break
     loss = agent.train(train_iterations)
-    if episode % 10 == 0:    
+    if episode % 100 == 0:    
         losses.extend(loss)
         stats.append([episode, total_reward, t + 1])
     

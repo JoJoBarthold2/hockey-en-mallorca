@@ -26,7 +26,7 @@ class Dueling_DQN_Agent(object):
             "eps": 0.05,                       
             "discount": 0.95,
             "buffer_size": int(1e5),
-            "batch_size": 128,
+            "batch_size": 256,
             "learning_rate": 0.0002,
             "update_target_every": 20,
             "use_target_net": True,
