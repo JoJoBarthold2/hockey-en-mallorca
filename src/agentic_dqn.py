@@ -12,7 +12,7 @@ from matplotlib import cm
 from segment_tree import SumSegmentTree, MinSegmentTree
 import numpy.random as random
 import logging
-
+import time
 
 # class to store transitions
 class Memory:
@@ -75,6 +75,7 @@ class DQNAgent(object):
         }
         self._config.update(userconfig)
         self._eps = self._config["eps"]
+        self.sample_times = []
 
         self.buffer = self.mem(max_size=self._config["buffer_size"])
 
@@ -120,7 +121,10 @@ class DQNAgent(object):
         for i in range(iter_fit):
 
             # sample from the replay buffer
+            start_time = time.time()
             data = self.buffer.sample(batch=self._config["batch_size"])
+            #print(f" Sample time: {time.time()- start_time}")
+            self.sample_times.append(time.time()- start_time)
             s = np.stack(data[:, 0])  # s_t
             a = np.stack(data[:, 1])  # a_t
             rew = np.stack(data[:, 2])[:, None]  # rew  (batchsize,1)
@@ -188,7 +192,7 @@ class QFunction(Feedforward):
         pred = self.Q_value(torch.from_numpy(observations).float(), acts)
         # Compute Loss
         elementwise_loss = self.loss(pred, torch.from_numpy(targets).float())
-        loss = elementwise_loss.mean()
+        loss = torch.mean(elementwise_loss)
         # Backward pass
         loss.backward()
         self.optimizer.step()
@@ -226,7 +230,8 @@ class PrioritizedReplayBuffer:
         self.size = 0
         self.current_idx = 0
         self.max_size = max_size
-
+        
+        
         # PER Stuff
         self.max_priority, self.tree_ptr = 1.0, 0
         self.alpha = alpha
@@ -329,7 +334,7 @@ class QFunctionPrio(Feedforward):
         self.optimizer = torch.optim.Adam(
             self.parameters(), lr=learning_rate, eps=0.000001
         )
-        self.loss = torch.nn.SmoothL1Loss(reduce=False)  # MSELoss()
+        self.loss = torch.nn.SmoothL1Loss(reduction="none")  # MSELoss()
 
     def fit(self, observations, actions, targets, weights):
         self.train()  # put model in training mode
@@ -417,7 +422,7 @@ class DQN_AGENT_priotized_buffer(object):
 
         self.alpha = alpha
         self.beta = beta
-
+        self.sample_times = []
         # Q Network
         self.Q = QFunctionPrio(
             observation_dim=self._observation_space.shape[0],
@@ -462,9 +467,12 @@ class DQN_AGENT_priotized_buffer(object):
 
             # sample from the replay buffer
             if self.buffer.size > self._config["batch_size"]:
+                start_time = time.time()
                 data, indices, weights = self.buffer.sample(
                     batch=self._config["batch_size"], beta=self.beta
                 )
+                logging.debug(f" Sample time: {time.time()- start_time}")
+                self.sample_times.append(time.time()- start_time)
                 s = np.stack(data[:, 0])  # s_t
                 a = np.stack(data[:, 1])  # a_t
                 rew = np.stack(data[:, 2])[:, None]  # rew  (batchsize,1)
@@ -480,42 +488,55 @@ class DQN_AGENT_priotized_buffer(object):
                 td_target = rew + gamma * (1.0 - done) * v_prime
 
                 # optimize the lsq objective
+                start_time = time.time()
                 fit_loss, elementwise_loss = self.Q.fit(s, a, td_target, weights)
+                logging.debug(f" Fit time: {time.time()- start_time}")
                 priorities = elementwise_loss + self.priority_eps
+                start_time = time.time()
                 self.buffer.update_priorities(indices, priorities)
-
+                logging.debug(f" Update time: {time.time()- start_time}")
                 losses.append(fit_loss)
             else:
                 break
 
         return losses
     
-    def train(self, max_episodes = 500, max_steps =500, fit_iterations = 32, env = None):
+    def train(self, max_episodes=500, max_steps=500, fit_iterations=32, env=None):
         losses = []
         stats = []  
         frame_idx = 0
-        num_frames = max_episodes * max_steps
+        
+        # Beta annealing parameters
+        beta_start = self.beta
+        beta_frames = max_episodes * 700  # Increase this to make annealing slower
+        
+        time_start = time.time()
         for i in range(max_episodes):
-           
-            # print("Starting a new episode")    
             total_reward = 0
             ob, _info = env.reset()
+            
             for t in range(max_steps):
-
-                fraction = min(frame_idx / num_frames, 1.0)
                 frame_idx += 1
-                self.beta = self.beta + fraction * (1.0 - self.beta)
+                
+                # Smoother beta annealing
+                self.beta = min(1.0, beta_start + frame_idx * (1.0 - beta_start) / beta_frames)
+                
                 done = False        
                 a = self.act(ob)
+                start_time = time.time()
                 (ob_new, reward, done, trunc, _info) = env.step(a)
-                total_reward+= reward
+                logging.debug(f" Env time: {time.time()- start_time}")
+                total_reward += reward
                 self.store_transition((ob, a, reward, ob_new, done))            
-                ob=ob_new        
+                ob = ob_new        
                 if done: break    
-            losses.extend(self.fit(32))
-            stats.append([i,total_reward,t+1])    
+                
+            losses.extend(self.fit(fit_iterations))
+            stats.append([i, total_reward, t+1])    
             
             if ((i-1)%20==0):
-                print("{}: Done after {} steps. Reward: {}".format(i, t+1, total_reward))
+                print(f"{i}: Done after {t+1} steps. Reward: {total_reward} beta: {self.beta} frames: {frame_idx}")
         
+        logging.debug(f" time per frame: {(time.time()-time_start)/frame_idx}")
+        logging.debug(f" mean sample time: {np.mean(self.sample_times)}")
         return stats, losses
