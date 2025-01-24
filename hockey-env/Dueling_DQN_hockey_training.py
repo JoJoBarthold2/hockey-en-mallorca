@@ -7,11 +7,10 @@ import hockey.hockey_env as h_env
 
 SEED_TRAIN_1 = 7489
 SEED_TRAIN_2 = 1312
-SEEDS_TEST = [291, 292, 293, 294, 295]
 seed = SEED_TRAIN_1
 
 reload(h_env)
-env_name = "Hockey_100000_30000_(256_256_128)_2"
+env_name = "Hockey_500000_30000_(256_256_128)"
 env = h_env.HockeyEnv()
 
 # Initialize the agent with the correct state/action space
@@ -24,7 +23,7 @@ opponent = h_env.BasicOpponent()
 stats = []
 losses = []
 
-max_episodes = 100000
+max_episodes = 500000
 train_iterations = 32  # Number of training steps per episode
 
 max_steps = 30000
