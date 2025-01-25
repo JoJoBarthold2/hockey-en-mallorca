@@ -13,12 +13,16 @@ from segment_tree import SumSegmentTree, MinSegmentTree
 import numpy.random as random
 import logging
 import time
+from collections import deque
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 # class to store transitions
 class Memory:
+    """Simple replay buffer as was given in the lecture
+    transitions have the shape : (ob, a, reward, ob_new, done)"""
+
     def __init__(self, max_size=100000):
         self.transitions = np.asarray([])
         self.size = 0
@@ -215,6 +219,7 @@ class QFunction(Feedforward):
 
 class PrioritizedReplayBuffer:
     """Prioritized Replay buffer. Adapted to be similar to Memory from the lecture
+     transitions have the shape : (ob, a, reward, ob_new, done)
 
     Attributes:
         max_priority (float): max priority
@@ -226,7 +231,11 @@ class PrioritizedReplayBuffer:
     """
 
     def __init__(
-        self, obs_dim: int, max_size: int, batch_size: int = 32, alpha: float = 0.6
+        self,
+        obs_dim: int,
+        max_size: int,
+        batch_size: int = 32,
+        alpha: float = 0.6,
     ):
         """Initialization."""
         assert alpha >= 0
@@ -329,6 +338,77 @@ class PrioritizedReplayBuffer:
         return self.transitions[0 : self.size]
 
 
+class N_Step_ReplayBuffer:
+    """N-step replay buffer. Adapted to be similar to Memory from the lecture can be used in Combination with PER
+
+    transitions have the shape : (ob, a, reward, ob_new, done)"""
+
+    def __init__(self, obs_dim, max_size=100000, n_steps=1):
+        self.transitions = np.asarray([])
+        self.size = 0
+        self.current_idx = 0
+        self.max_size = max_size
+        self.n_steps = n_steps
+        self.discount = 0.95
+        self.n_step_buffer = deque(maxlen=n_steps)
+
+    def add_transition(self, transitions_new):
+        if self.size == 0:
+            blank_buffer = [np.asarray(transitions_new, dtype=object)] * self.max_size
+            self.transitions = np.asarray(blank_buffer)
+
+        self.n_step_buffer.append(transitions_new)
+
+        if len(self.n_step_buffer) < self.n_steps:
+            return ()
+
+        # add n-step transition
+        action, observation = self.n_step_buffer[0][
+            :2
+        ]  # get the first action and observation from the buffer
+        reward, next_observation, done = self._get_n_step_info(self.current_idx)
+
+        self.transitions[self.current_idx, :] = (
+            np.asarray(  # add the n-step transition to the buffer
+                [observation, action, reward, next_observation, done], dtype=object
+            )
+        )
+        self.size = min(self.size + 1, self.max_size)
+        self.current_idx = (self.current_idx + 1) % self.max_size
+        return self.n_step_buffer[0]
+
+    def sample(self, batch=1):
+        if batch > self.size:
+            batch = self.size
+        self.inds = np.random.choice(range(self.size), size=batch, replace=False)
+        return self.transitions[self.inds, :]
+
+    def sample_from_idx(self, idx, batch=1):
+        assert (
+            len(idx) == batch
+        ), "Batch size does not match the length of the index in sample_from_idx"
+
+        assert (
+            batch <= self.size
+        ), "Batch size is larger than the buffer size in sample_from_idx"
+
+        return self.transitions[idx, :]
+
+    def _get_n_step_info(self, idx):
+        reward, next_observation, done = self.n_step_buffer[-1][
+            -3:
+        ]  # take the last transitions out of the n_step_buffer
+
+        # now we go back in the buffer and add the rewards
+        for transition in reversed(list(self.n_step_buffer)[:-1]):
+            r, n_o, d = transition[-3:]
+
+            rew = r + self.discount * rew * (1 - d)
+            next_obs, done = (n_o, d) if d else (next_obs, done)
+
+        return reward, next_observation, done
+
+
 class QFunctionPrio(Feedforward):
     """Q function with prioritized replay buffer, this is the same as QFunction but with the elementwise loss  and some gpu operations"""
 
@@ -356,6 +436,7 @@ class QFunctionPrio(Feedforward):
         loss = (elementwise_loss * torch.from_numpy(weights).float()).mean()
         # Backward pass
         loss.backward()
+        # implement gradient clipping , seems to stabilize the training
         torch.nn.utils.clip_grad_norm_(self.parameters(), max_norm=10)
         self.optimizer.step()
         return loss.item(), elementwise_loss.detach().numpy()
@@ -382,6 +463,7 @@ class DQN_AGENT_priotized_buffer(object):
         alpha=0.2,
         beta=0.6,
         max_size=100000,
+        n_steps=1,
         config={
             "eps": 0.05,  # Epsilon in epsilon greedy policies
             "discount": 0.95,
@@ -420,12 +502,22 @@ class DQN_AGENT_priotized_buffer(object):
             "prioritized_replay_eps": 1e-6,
         }
         self._config.update(userconfig)
+        self.n_steps = n_steps
+        self.use_n_step = n_steps > 1
         self.buffer = PrioritizedReplayBuffer(
             obs_dim=observation_space.shape[0],
             max_size=max_size,
             alpha=alpha,
             batch_size=self._config["batch_size"],
         )
+        if self.use_n_step:
+            # we later combine the losses of the n-step transitions with the elementwise loss
+            self.n_buffer = N_Step_ReplayBuffer(
+                obs_dim=observation_space.shape[0],
+                max_size=max_size,
+                n_steps=n_steps,
+                discount=config["discount"],
+            )
         self._eps = self._config["eps"]
         self.priority_eps = self._config["prioritized_replay_eps"]
 
@@ -437,13 +529,14 @@ class DQN_AGENT_priotized_buffer(object):
             observation_dim=self._observation_space.shape[0],
             action_dim=self._action_n,
             learning_rate=self._config["learning_rate"],
-        )
+        ).to(device)
         # Q Network
         self.Q_target = QFunctionPrio(
             observation_dim=self._observation_space.shape[0],
             action_dim=self._action_n,
             learning_rate=0,
-        )
+        ).to(device)
+        logging.info(f"Using device: {device}")
         self._update_target_net()
         self.train_iter = 0
 
@@ -538,7 +631,16 @@ class DQN_AGENT_priotized_buffer(object):
                 (ob_new, reward, done, trunc, _info) = env.step(a)
                 logging.debug(f" Env time: {time.time()- start_time}")
                 total_reward += reward
-                self.store_transition((ob, a, reward, ob_new, done))
+
+                if self.use_n_step:
+                    one_step_transition = self.n_buffer.add_transition(
+                        (ob, a, reward, ob_new, done)
+                    )
+                else:
+                    one_step_transition = (ob, a, reward, ob_new, done)
+
+                self.store_transition(one_step_transition)
+
                 ob = ob_new
                 if done:
                     break
