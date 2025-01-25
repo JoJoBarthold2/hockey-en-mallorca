@@ -31,6 +31,7 @@ class Memory:
 
     def add_transition(self, transitions_new):
         if self.size == 0:
+
             blank_buffer = [np.asarray(transitions_new, dtype=object)] * self.max_size
             self.transitions = np.asarray(blank_buffer)
 
@@ -261,6 +262,10 @@ class PrioritizedReplayBuffer:
 
     def store(self, transitions_new):
         if self.size == 0:
+            # Transitions shape:  (array([-0.56146526, -0.8275003 , -0.9523803 ], dtype=float32), 3, -4.787382871690309, array([-0.6188719 , -0.78549194, -1.4230055 ], dtype=float32), False)
+
+            print("Creating new buffer with size: ", self.max_size)
+            print("Transitions shape: ", len(transitions_new))
             blank_buffer = [np.asarray(transitions_new, dtype=object)] * self.max_size
             self.transitions = np.asarray(blank_buffer)
 
@@ -343,13 +348,13 @@ class N_Step_ReplayBuffer:
 
     transitions have the shape : (ob, a, reward, ob_new, done)"""
 
-    def __init__(self, obs_dim, max_size=100000, n_steps=1):
+    def __init__(self, obs_dim, max_size=100000, n_steps=1, discount=0.95):
         self.transitions = np.asarray([])
         self.size = 0
         self.current_idx = 0
         self.max_size = max_size
         self.n_steps = n_steps
-        self.discount = 0.95
+        self.discount = discount
         self.n_step_buffer = deque(maxlen=n_steps)
 
     def add_transition(self, transitions_new):
@@ -360,10 +365,10 @@ class N_Step_ReplayBuffer:
         self.n_step_buffer.append(transitions_new)
 
         if len(self.n_step_buffer) < self.n_steps:
-            return ()
+            return transitions_new  # not enough transitions to add n-step transition
 
         # add n-step transition
-        action, observation = self.n_step_buffer[0][
+        observation, action = self.n_step_buffer[0][
             :2
         ]  # get the first action and observation from the buffer
         reward, next_observation, done = self._get_n_step_info(self.current_idx)
@@ -386,7 +391,7 @@ class N_Step_ReplayBuffer:
     def sample_from_idx(self, idx, batch=1):
         assert (
             len(idx) == batch
-        ), "Batch size does not match the length of the index in sample_from_idx"
+        ), f"Batch size {batch} does not match the length of the index in sample_from_idx {len(idx)}"
 
         assert (
             batch <= self.size
@@ -395,7 +400,7 @@ class N_Step_ReplayBuffer:
         return self.transitions[idx, :]
 
     def _get_n_step_info(self, idx):
-        reward, next_observation, done = self.n_step_buffer[-1][
+        rew, next_obs, done = self.n_step_buffer[-1][
             -3:
         ]  # take the last transitions out of the n_step_buffer
 
@@ -406,7 +411,7 @@ class N_Step_ReplayBuffer:
             rew = r + self.discount * rew * (1 - d)
             next_obs, done = (n_o, d) if d else (next_obs, done)
 
-        return reward, next_observation, done
+        return rew, next_obs, done
 
 
 class QFunctionPrio(Feedforward):
@@ -425,16 +430,35 @@ class QFunctionPrio(Feedforward):
         )
         self.loss = torch.nn.SmoothL1Loss(reduction="none")  # MSELoss()
 
-    def fit(self, observations, actions, targets, weights):
+    def fit(
+        self,
+        observations,
+        actions,
+        targets,
+        weights,
+        n_step_obs=None,
+        n_step_act=None,
+        n_step_targets=None,
+    ):
         self.train()  # put model in training mode
         self.optimizer.zero_grad()
         # Forward pass
-        acts = torch.from_numpy(actions)
-        pred = self.Q_value(torch.from_numpy(observations).float(), acts)
+        acts = torch.from_numpy(actions).to(device)
+        pred = self.Q_value(torch.from_numpy(observations).float(), acts).to(device)
         # Compute Loss
-        elementwise_loss = self.loss(pred, torch.from_numpy(targets).float())
-        loss = (elementwise_loss * torch.from_numpy(weights).float()).mean()
+        elementwise_loss = self.loss(pred, torch.from_numpy(targets).float().to(device))
+
+        if n_step_obs is not None:
+            n_acts = torch.from_numpy(n_step_act).to(device)
+            n_pred = self.Q_value(torch.from_numpy(n_step_obs).float(), n_acts).to(
+                device
+            )
+            n_elementwise_loss = self.loss(
+                n_pred, torch.from_numpy(n_step_targets).float().to(device)
+            )
+            elementwise_loss = elementwise_loss + n_elementwise_loss
         # Backward pass
+        loss = (elementwise_loss * torch.from_numpy(weights).float()).mean()
         loss.backward()
         # implement gradient clipping , seems to stabilize the training
         torch.nn.utils.clip_grad_norm_(self.parameters(), max_norm=10)
@@ -591,8 +615,39 @@ class DQN_AGENT_priotized_buffer(object):
 
                 # optimize the lsq objective
                 start_time = time.time()
-                fit_loss, elementwise_loss = self.Q.fit(s, a, td_target, weights)
+                if self.use_n_step:
+                    n_step_data = self.n_buffer.sample_from_idx(
+                        indices, self._config["batch_size"]
+                    )
+                    n_s = np.stack(n_step_data[:, 0])
+
+                    logging.debug(f" n_s shape: {n_s.shape}")
+
+                    n_a = np.stack(n_step_data[:, 1])
+                    n_rew = np.stack(n_step_data[:, 2])[:, None]
+                    n_s_prime = np.stack(n_step_data[:, 3])
+
+                    if self._config["use_target_net"]:
+                        n_v_prime = self.Q_target.maxQ(n_s_prime)
+                    else:
+                        n_v_prime = self.Q.maxQ(n_s_prime)
+                    n_done = np.stack(n_step_data[:, 4])[:, None]
+                    n_td_target = n_rew + gamma * (1.0 - n_done) * n_v_prime
+
+                    fit_loss, elementwise_loss = self.Q.fit(
+                        s,
+                        a,
+                        td_target,
+                        weights,
+                        n_step_obs=n_s,
+                        n_step_act=n_a,
+                        n_step_targets=n_td_target,
+                    )
+                else:
+                    fit_loss, elementwise_loss = self.Q.fit(s, a, td_target, weights)
+
                 logging.debug(f" Fit time: {time.time()- start_time}")
+
                 priorities = elementwise_loss + self.priority_eps
                 start_time = time.time()
                 self.buffer.update_priorities(indices, priorities)
@@ -639,7 +694,8 @@ class DQN_AGENT_priotized_buffer(object):
                 else:
                     one_step_transition = (ob, a, reward, ob_new, done)
 
-                self.store_transition(one_step_transition)
+                if one_step_transition is not ():
+                    self.store_transition(one_step_transition)
 
                 ob = ob_new
                 if done:
