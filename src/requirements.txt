@@ -13,4 +13,4 @@ ipympl
 # --extra-index-url https://pypi.org/simple
 torch
 git+https://github.com/martius-lab/hockey-env.git 
-
+imageio

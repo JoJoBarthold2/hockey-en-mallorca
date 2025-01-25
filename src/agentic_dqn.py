@@ -14,6 +14,9 @@ import numpy.random as random
 import logging
 import time
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
 # class to store transitions
 class Memory:
     def __init__(self, max_size=100000):
@@ -123,8 +126,8 @@ class DQNAgent(object):
             # sample from the replay buffer
             start_time = time.time()
             data = self.buffer.sample(batch=self._config["batch_size"])
-            #print(f" Sample time: {time.time()- start_time}")
-            self.sample_times.append(time.time()- start_time)
+            # print(f" Sample time: {time.time()- start_time}")
+            self.sample_times.append(time.time() - start_time)
             s = np.stack(data[:, 0])  # s_t
             a = np.stack(data[:, 1])  # a_t
             rew = np.stack(data[:, 2])[:, None]  # rew  (batchsize,1)
@@ -188,15 +191,17 @@ class QFunction(Feedforward):
         self.train()  # put model in training mode
         self.optimizer.zero_grad()
         # Forward pass
-        acts = torch.from_numpy(actions)
-        pred = self.Q_value(torch.from_numpy(observations).float(), acts)
+        acts = torch.from_numpy(actions, device=device)
+        pred = self.Q_value(torch.from_numpy(observations).float(), acts, device=device)
         # Compute Loss
-        elementwise_loss = self.loss(pred, torch.from_numpy(targets).float())
-        loss = torch.mean(elementwise_loss)
+        elementwise_loss = self.loss(
+            pred, torch.from_numpy(targets).float(), device=device
+        )
+        loss = torch.mean(elementwise_loss, device=device)
         # Backward pass
         loss.backward()
         self.optimizer.step()
-        return loss.item(), elementwise_loss.detach().numpy()
+        return loss.item().cpu(), elementwise_loss.detach().numpy().cpu()
 
     def Q_value(self, observations, actions):
         return self.forward(observations).gather(1, actions[:, None])
@@ -230,8 +235,7 @@ class PrioritizedReplayBuffer:
         self.size = 0
         self.current_idx = 0
         self.max_size = max_size
-        
-        
+
         # PER Stuff
         self.max_priority, self.tree_ptr = 1.0, 0
         self.alpha = alpha
@@ -274,6 +278,7 @@ class PrioritizedReplayBuffer:
         logging.debug(f"Indices type: {type(indices)}")
         logging.debug(f"indices: {indices}")
         logging.debug(f"Number of indices: {len(indices)}")
+        logging.debug(f"Indices shape: {indices.shape}")
         weights = np.array([self._calculate_weight(i, beta) for i in indices])
         return self.transitions[indices], indices, weights
 
@@ -313,6 +318,8 @@ class PrioritizedReplayBuffer:
 
         # calculate weights
         p_sample = self.sum_tree[idx] / self.sum_tree.sum()
+        logging.debug(f"p_sample: {p_sample}")
+        logging.debug(f"self.size: {self.size}")
         weight = (p_sample * self.size) ** (-beta)
         weight = weight / max_weight
 
@@ -323,6 +330,8 @@ class PrioritizedReplayBuffer:
 
 
 class QFunctionPrio(Feedforward):
+    """Q function with prioritized replay buffer, this is the same as QFunction but with the elementwise loss  and some gpu operations"""
+
     def __init__(
         self, observation_dim, action_dim, hidden_sizes=[100, 100], learning_rate=0.0002
     ):
@@ -472,7 +481,7 @@ class DQN_AGENT_priotized_buffer(object):
                     batch=self._config["batch_size"], beta=self.beta
                 )
                 logging.debug(f" Sample time: {time.time()- start_time}")
-                self.sample_times.append(time.time()- start_time)
+                self.sample_times.append(time.time() - start_time)
                 s = np.stack(data[:, 0])  # s_t
                 a = np.stack(data[:, 1])  # a_t
                 rew = np.stack(data[:, 2])[:, None]  # rew  (batchsize,1)
@@ -500,43 +509,48 @@ class DQN_AGENT_priotized_buffer(object):
                 break
 
         return losses
-    
+
     def train(self, max_episodes=500, max_steps=500, fit_iterations=32, env=None):
         losses = []
-        stats = []  
+        stats = []
         frame_idx = 0
-        
+
         # Beta annealing parameters
         beta_start = self.beta
         beta_frames = max_episodes * 700  # Increase this to make annealing slower
-        
+
         time_start = time.time()
         for i in range(max_episodes):
             total_reward = 0
             ob, _info = env.reset()
-            
+
             for t in range(max_steps):
                 frame_idx += 1
-                
+
                 # Smoother beta annealing
-                self.beta = min(1.0, beta_start + frame_idx * (1.0 - beta_start) / beta_frames)
-                
-                done = False        
+                self.beta = min(
+                    1.0, beta_start + frame_idx * (1.0 - beta_start) / beta_frames
+                )
+
+                done = False
                 a = self.act(ob)
                 start_time = time.time()
                 (ob_new, reward, done, trunc, _info) = env.step(a)
                 logging.debug(f" Env time: {time.time()- start_time}")
                 total_reward += reward
-                self.store_transition((ob, a, reward, ob_new, done))            
-                ob = ob_new        
-                if done: break    
-                
+                self.store_transition((ob, a, reward, ob_new, done))
+                ob = ob_new
+                if done:
+                    break
+
             losses.extend(self.fit(fit_iterations))
-            stats.append([i, total_reward, t+1])    
-            
-            if ((i-1)%20==0):
-                print(f"{i}: Done after {t+1} steps. Reward: {total_reward} beta: {self.beta} frames: {frame_idx}")
-        
+            stats.append([i, total_reward, t + 1])
+
+            if (i - 1) % 20 == 0:
+                print(
+                    f"{i}: Done after {t+1} steps. Reward: {total_reward} beta: {self.beta} frames: {frame_idx}"
+                )
+
         logging.debug(f" time per frame: {(time.time()-time_start)/frame_idx}")
         logging.debug(f" mean sample time: {np.mean(self.sample_times)}")
         return stats, losses
