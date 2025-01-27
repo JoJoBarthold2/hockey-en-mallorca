@@ -10,20 +10,20 @@ SEED_TRAIN_2 = 1312
 seed = SEED_TRAIN_1
 
 reload(h_env)
-env_name = "Hockey_500000_30000_(256_256_128)"
+env_name = "Hockey_200000_30000_(128_128)"
 env = h_env.HockeyEnv()
 
 # Initialize the agent with the correct state/action space
 state_space = env.observation_space
 action_space = env.discrete_action_space
 
-agent = Dueling_DQN_Agent(state_space, action_space, seed = seed, use_eps_decay = True, hidden_sizes = [256, 256, 128]) 
+agent = Dueling_DQN_Agent(state_space, action_space, seed = seed, use_eps_decay = True, hidden_sizes = [128, 128]) 
 opponent = h_env.BasicOpponent()
 
 stats = []
 losses = []
 
-max_episodes = 500000
+max_episodes = 200000
 train_iterations = 32  # Number of training steps per episode
 
 max_steps = 30000
