@@ -443,18 +443,17 @@ class QFunctionPrio(Feedforward):
         self.train()  # put model in training mode
         self.optimizer.zero_grad()
         # Forward pass
-        acts = torch.from_numpy(actions).to(device)
-        pred = self.Q_value(torch.from_numpy(observations).float(), acts).to(device)
+        acts = torch.from_numpy(actions)
+        pred = self.Q_value(torch.from_numpy(observations).float(), acts)
         # Compute Loss
-        elementwise_loss = self.loss(pred, torch.from_numpy(targets).float().to(device))
+        elementwise_loss = self.loss(pred, torch.from_numpy(targets).float())
 
         if n_step_obs is not None:
-            n_acts = torch.from_numpy(n_step_act).to(device)
-            n_pred = self.Q_value(torch.from_numpy(n_step_obs).float(), n_acts).to(
-                device
-            )
+            n_acts = torch.from_numpy(n_step_act)
+            n_pred = self.Q_value(torch.from_numpy(n_step_obs).float(), n_acts)
+            
             n_elementwise_loss = self.loss(
-                n_pred, torch.from_numpy(n_step_targets).float().to(device)
+                n_pred, torch.from_numpy(n_step_targets).float()
             )
             elementwise_loss = elementwise_loss + n_elementwise_loss
         # Backward pass
@@ -553,13 +552,13 @@ class DQN_AGENT_priotized_buffer(object):
             observation_dim=self._observation_space.shape[0],
             action_dim=self._action_n,
             learning_rate=self._config["learning_rate"],
-        ).to(device)
+        )
         # Q Network
         self.Q_target = QFunctionPrio(
             observation_dim=self._observation_space.shape[0],
             action_dim=self._action_n,
             learning_rate=0,
-        ).to(device)
+        )
         logging.info(f"Using device: {device}")
         self._update_target_net()
         self.train_iter = 0
@@ -694,7 +693,7 @@ class DQN_AGENT_priotized_buffer(object):
                 else:
                     one_step_transition = (ob, a, reward, ob_new, done)
 
-                if one_step_transition is not ():
+                if one_step_transition != ():
                     self.store_transition(one_step_transition)
 
                 ob = ob_new
