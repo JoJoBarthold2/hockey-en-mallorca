@@ -9,7 +9,7 @@ import pylab as plt
 # %matplotlib inline
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
-from segment_tree import SumSegmentTree, MinSegmentTree
+from utils.segment_tree import SumSegmentTree, MinSegmentTree
 import numpy.random as random
 import logging
 import time
