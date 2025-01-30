@@ -102,6 +102,9 @@ class Dueling_DQN_Agent(object):
     def _update_target_net(self):        
         self.Q_target.load_state_dict(self.Q.state_dict())
     
+    def act(self, state):       # Fuction to be consistent with naming for self-play
+        self.perform_greedy_action(state, eps = 0)
+
     def perform_greedy_action(self, state, eps = None):
 
         if eps is None:
