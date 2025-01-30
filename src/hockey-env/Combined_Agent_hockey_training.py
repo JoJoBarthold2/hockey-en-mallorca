@@ -3,9 +3,9 @@ import numpy as np
 import logging
 import time
 
-from Combined_Agent.Dueling_DQN_Agent import Dueling_DQN_Agent
-from Combined_Agent.utils.random_agent import RandomAgent
-import Combined_Agent.utils.stats_functions as sf
+from Combined_Agent_Double.Dueling_DDQN_Agent import Dueling_DDQN_Agent
+from Combined_Agent_Double.utils.random_agent import RandomAgent
+import Combined_Agent_Double.utils.stats_functions as sf
 import hockey.hockey_env as h_env
 
 SEED_TRAIN_1 = 7489
@@ -13,13 +13,13 @@ SEED_TRAIN_2 = 1312
 seed = SEED_TRAIN_1
 
 reload(h_env)
-env_name = "Combined_test_4_DuelingDQN_50k_30k_(128,128)"
+env_name = "Combined_test_5_DuelingDDQN_50k_30k_(128,128)"
 env = h_env.HockeyEnv()
 
 state_space = env.observation_space
 action_space = env.discrete_action_space
 
-agent = Dueling_DQN_Agent(state_space, action_space, seed = seed, use_eps_decay = True, hidden_sizes = [128, 128])
+agent = Dueling_DDQN_Agent(state_space, action_space, seed = seed, use_eps_decay = True, hidden_sizes = [128, 128])
 
 opponent0 = RandomAgent(seed = seed)
 opponent1 = h_env.BasicOpponent()
