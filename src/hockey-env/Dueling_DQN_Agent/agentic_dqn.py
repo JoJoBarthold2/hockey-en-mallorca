@@ -415,7 +415,7 @@ class N_Step_ReplayBuffer:
 
 
 class QFunctionPrio(Feedforward):
-    """Q function with prioritized replay buffer, this is the same as QFunction but with the elementwise loss  and some gpu operations"""
+    """Q function with prioritized replay buffer, this is the same as QFunction but with the elementwise loss and some gpu operations"""
 
     def __init__(
         self, observation_dim, action_dim, hidden_sizes=[100, 100], learning_rate=0.0002
