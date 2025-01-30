@@ -81,6 +81,8 @@ for episode in range(max_episodes):
 
         a1 = agent.perform_greedy_action(state)
         a2 = opponent.act(obs_agent2)
+        if opponent == opponent3:
+            a2 = env.discrete_to_continous_action(a2)
         full_action = np.hstack([env.discrete_to_continous_action(a1), a2])
 
         start_time = time.time()        # Debbuging
