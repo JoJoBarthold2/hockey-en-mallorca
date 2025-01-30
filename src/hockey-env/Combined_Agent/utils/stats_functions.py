@@ -105,6 +105,17 @@ def load_betas(env_name, name = "beta"):
     
     return betas
 
+def plot_beta_evolution(env_name, betas, save_figure = True, name = "beta_evolution"):
+    plt.figure(figsize=(10, 5))
+    plt.plot(betas, marker='o', linestyle='-', color='b', label='Beta Values')
+    plt.xlabel('Iteration')
+    plt.ylabel('Beta Value')
+    plt.title('Evolution of Beta Values')
+    plt.grid(True, linestyle='--', alpha=0.6)
+    plt.legend()
+    if save_figure:
+        _save_plot(env_name, name)
+
 def save_epsilons(env_name, epsilons, name = "epsilon"):
 
     os.makedirs(f"{env_name}/stats/pkl", exist_ok=True)
@@ -121,8 +132,19 @@ def load_epsilons(env_name, name = "epsilon"):
         epsilons = pickle.load(f)
 
         return epsilons
-    
-def save_winrate(env_name, winrates, name = "winrates"):
+
+def plot_epsilon_evolution(env_name, epsilons, save_figure = True, name = "epsilon_evolution"):
+    plt.figure(figsize=(10, 5))
+    plt.plot(epsilons, marker='o', linestyle='-', color='b', label='Epsilon Values')
+    plt.xlabel('Iteration')
+    plt.ylabel('Epsilon Value')
+    plt.title('Evolution of Beta Values')
+    plt.grid(True, linestyle='--', alpha=0.6)
+    plt.legend()
+    if save_figure:
+        _save_plot(env_name, name)
+
+def save_winrates(env_name, winrates, name = "winrates"):
 
     os.makedirs(f"{env_name}/stats/pkl", exist_ok=True)
     winrate_path = os.path.join(f"{env_name}/stats/pkl", f"{name}.pkl")
@@ -138,3 +160,16 @@ def load_winrates(env_name, name = "winrates"):
         winrates = pickle.load(f)
 
         return winrates
+    
+def plot_winrates_evolution(env_name, winrates, save_figure = True, name = "winrate_evolution"):
+
+    plt.figure(figsize=(10, 5))
+    for i in range(winrates.shape[1]):
+        plt.plot(winrates[:, i], marker='o', linestyle='-', label=f'Component {i}')
+    plt.xlabel('Iteration')
+    plt.ylabel('Value')
+    plt.title('Evolution of Winrates')
+    plt.grid(True, linestyle='--', alpha=0.6)
+    plt.legend()
+    if save_figure:
+        _save_plot(env_name, name)
