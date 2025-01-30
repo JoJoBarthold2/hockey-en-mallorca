@@ -12,7 +12,7 @@ SEED_TRAIN_2 = 1312
 seed = SEED_TRAIN_1
 
 reload(h_env)
-env_name = "Combined_test_1_10k_30k_(128,128)"
+env_name = "Combined_test_1_50k_30k_(128,128)"
 env = h_env.HockeyEnv()
 
 # Initialize the agent with the correct state/action space
@@ -27,7 +27,7 @@ losses = []
 
 frame_idx = 0
 
-max_episodes = 10000
+max_episodes = 50000
 max_steps = 30000
 
 train_iterations = 32  # Number of training steps per episode
