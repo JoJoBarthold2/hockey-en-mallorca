@@ -120,10 +120,10 @@ class Dueling_DDQN_Agent(object):
                 v_prime = self.Q.maxQ(s_prime)"""
 
             # Double DQN
-            a_prime = self.Q.greedyAction(s_prime)  # Get best action using Q network
+            a_prime = self.Q.greedyAction(s_prime)      # Get best action using Q network
             s_prime_tensor = torch.tensor(s_prime, dtype=torch.float32)
             a_prime_tensor = torch.tensor(a_prime, dtype=torch.int64)
-            v_prime = self.Q_target.Q_value(s_prime_tensor, a_prime_tensor)  # Evaluate it using Q_target
+            v_prime = self.Q_target.Q_value(s_prime_tensor, a_prime_tensor)     # Evaluate it using Q_target
 
             # target                                              
             td_target = rew + self._config["discount"] * (1.0 - done) * v_prime.detach().numpy()

@@ -3,7 +3,7 @@ import numpy as np
 import logging
 import time
 
-from Combined_Agent.Dueling_DQN_Agent import Dueling_DQN_Agent
+from Combined_Agent.Dueling_DDQN_Agent import Dueling_DDQN_Agent
 from Combined_Agent.utils.random_agent import RandomAgent
 import Combined_Agent.utils.stats_functions as sf
 import hockey.hockey_env as h_env
@@ -19,7 +19,7 @@ env = h_env.HockeyEnv()
 state_space = env.observation_space
 action_space = env.discrete_action_space
 
-agent = Dueling_DQN_Agent(state_space, action_space, seed = seed, use_eps_decay = True, hidden_sizes = [128, 128])
+agent = Dueling_DDQN_Agent(state_space, action_space, seed = seed, use_eps_decay = True, hidden_sizes = [128, 128])
 
 opponent0 = RandomAgent(seed = seed)
 opponent1 = h_env.BasicOpponent()
@@ -126,6 +126,8 @@ for episode in range(max_episodes):
         sf.save_epsilons(env_name, epsilons)
         sf.save_stats(env_name, stats, losses)
         sf.save_winrate(env_name, winrates)
+        sf.plot_returns(stats, env_name)
+        sf.plot_losses(losses, env_name)
 
     logging.debug(f" time per frame: {(time.time()-time_start)/frame_idx}")
     logging.debug(f" mean sample time: {np.mean(agent.sample_times)}")

@@ -10,7 +10,7 @@ from Combined_Agent.QFunction import QFunction
 import Combined_Agent.utils.n_step_replay_buffer as rb
 import Combined_Agent.utils.prioritized_replay_buffer as mem
 
-class Dueling_DQN_Agent(object):
+class Dueling_DDQN_Agent(object):
 
     """ Agent implementing Q-learning with NN function approximation. """
 
@@ -150,14 +150,15 @@ class Dueling_DQN_Agent(object):
                 s_prime = np.stack(data[:,3]) # Next state (s_t+1)
                 done = np.stack(data[:,4])[:,None] # Done flag (1 if terminal, else 0)
 
-                if self._config["use_target_net"]:
-                    v_prime = self.Q_target.maxQ(s_prime)
-                else:
-                    v_prime = self.Q.maxQ(s_prime)
+                # Double DQN
+                a_prime = self.Q.greedyAction(s_prime)      # Get best action using Q network
+                s_prime_tensor = torch.tensor(s_prime, dtype=torch.float32)
+                a_prime_tensor = torch.tensor(a_prime, dtype=torch.int64)
+                v_prime = self.Q_target.Q_value(s_prime_tensor, a_prime_tensor)     # Evaluate it using Q_target
 
                 # Target    
                                                       
-                td_target = rew + self._config["discount"] * (1.0 - done) * v_prime
+                td_target = rew + self._config["discount"] * (1.0 - done) * v_prime.detach().numpy()
                 
                 # Optimize the lsq objective
                 
@@ -176,12 +177,14 @@ class Dueling_DQN_Agent(object):
                     n_rew = np.stack(n_step_data[:, 2])[:, None]
                     n_s_prime = np.stack(n_step_data[:, 3])
 
-                    if self._config["use_target_net"]:
-                        n_v_prime = self.Q_target.maxQ(n_s_prime)
-                    else:
-                        n_v_prime = self.Q.maxQ(n_s_prime)
+                    # Double DQN
+                    n_a_prime = self.Q.greedyAction(n_s_prime)      # Get best action using Q network
+                    n_s_prime_tensor = torch.tensor(n_s_prime, dtype=torch.float32)
+                    n_a_prime_tensor = torch.tensor(n_a_prime, dtype=torch.int64)
+                    n_v_prime = self.Q_target.Q_value(n_s_prime_tensor, n_a_prime_tensor)     # Evaluate it using Q_target
+
                     n_done = np.stack(n_step_data[:, 4])[:, None]
-                    n_td_target = n_rew + self._config["discount"] * (1.0 - n_done) * n_v_prime
+                    n_td_target = n_rew + self._config["discount"] * (1.0 - n_done) * n_v_prime.detach().numpy()
 
                     fit_loss, elementwise_loss = self.Q.fit(s, a, td_target, weights, n_step_obs = n_s, n_step_act = n_a, n_step_targets = n_td_target)
                 
