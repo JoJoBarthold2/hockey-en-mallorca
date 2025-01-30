@@ -13,7 +13,7 @@ SEED_TRAIN_2 = 1312
 seed = SEED_TRAIN_1
 
 reload(h_env)
-env_name = "Combined_test_5_DuelingDDQN_50k_30k_(128,128)"
+env_name = "Combined_test_6_DuelingDDQN_50k_30k_(128,128)"
 env = h_env.HockeyEnv()
 
 state_space = env.observation_space
@@ -30,8 +30,6 @@ opponents = [opponent0, opponent1, opponent2, opponent3]
 
 match_history = np.full((len(opponents), 20), -1)
 
-iterations_to_train_against_random = 10000
-
 def add_match_result(agent_index, result):
     global match_history
     match_history[agent_index] = np.roll(match_history[agent_index], -1)
@@ -45,7 +43,7 @@ winrates = np.empty((0, 4))
 
 frame_idx = 0
 
-max_episodes = 50000
+max_episodes = 100000
 iterations_to_train_against_random = 1000     # Better if we just try with 1000 probably
 max_steps = 30000
 
@@ -65,11 +63,12 @@ for episode in range(max_episodes):
 
     total_reward = 0
 
-    if episode < iterations_to_train_against_random:
+    """if episode < iterations_to_train_against_random:
         opponent = opponent0
     else:
         lowest_winrate_opponent = np.argmin(np.sum(match_history, axis=1)) 
-        opponent = opponents[lowest_winrate_opponent]
+        opponent = opponents[lowest_winrate_opponent]"""
+    opponent = opponent1
 
     for t in range(max_steps):
 
@@ -80,10 +79,10 @@ for episode in range(max_episodes):
         done = False
 
         a1 = agent.perform_greedy_action(state)
-        a2 = opponent.act(obs_agent2)
+        """a2 = opponent.act(obs_agent2)
         if opponent == opponent3:
             a2 = env.discrete_to_continous_action(a2)
-        full_action = np.hstack([env.discrete_to_continous_action(a1), a2])
+        full_action = np.hstack([env.discrete_to_continous_action(a1), a2])"""
 
         start_time = time.time()        # Debbuging
 
@@ -106,8 +105,8 @@ for episode in range(max_episodes):
 
         if done or truncated: break
 
-    if episode >= iterations_to_train_against_random:
-        add_match_result(lowest_winrate_opponent, info["winner"])
+    """if episode >= iterations_to_train_against_random:
+        add_match_result(lowest_winrate_opponent, info["winner"])"""
 
     loss = agent.train(train_iterations)
 
@@ -116,7 +115,7 @@ for episode in range(max_episodes):
         stats.append([episode, total_reward, t + 1])
         betas.append(agent.beta)
         epsilons.append(agent._eps)
-        winrates = np.vstack([winrates, np.sum(match_history, axis=1)])
+        #winrates = np.vstack([winrates, np.sum(match_history, axis=1)])
         print(f"Episode {episode+1}/{max_episodes}, Total Reward: {total_reward}, Beta: {agent.beta}")
     
     if agent._config["use_eps_decay"] and episode > int(0.5 * max_episodes):
@@ -127,12 +126,12 @@ for episode in range(max_episodes):
         sf.save_betas(env_name, betas)
         sf.save_epsilons(env_name, epsilons)
         sf.save_stats(env_name, stats, losses)
-        sf.save_winrates(env_name, winrates)
+        #sf.save_winrates(env_name, winrates)
         sf.plot_returns(stats, env_name)
         sf.plot_losses(losses, env_name)
         sf.plot_beta_evolution(env_name, betas)
         sf.plot_epsilon_evolution(env_name, epsilons)
-        sf.plot_winrates_evolution(env_name, winrates)
+        #sf.plot_winrates_evolution(env_name, winrates)
 
     logging.debug(f" time per frame: {(time.time()-time_start)/frame_idx}")
     logging.debug(f" mean sample time: {np.mean(agent.sample_times)}")
@@ -141,9 +140,9 @@ agent.Q.save(env_name, name = "training_finished")
 sf.save_betas(env_name, betas)
 sf.save_epsilons(env_name, epsilons)
 sf.save_stats(env_name, stats, losses)
-sf.save_winrates(env_name, winrates)
+#sf.save_winrates(env_name, winrates)
 sf.plot_returns(stats, env_name)
 sf.plot_losses(losses, env_name)
 sf.plot_beta_evolution(env_name, betas)
 sf.plot_epsilon_evolution(env_name, epsilons)
-sf.plot_winrates_evolution(env_name, winrates)
+#sf.plot_winrates_evolution(env_name, winrates)
