@@ -87,3 +87,37 @@ def load_test_stats(env_name):
     with open(stats_path, "rb") as f:
         loaded_stats = pickle.load(f)
     return loaded_stats
+
+def save_betas(env_name, betas, name = "beta"):
+
+        os.makedirs(f"{env_name}/stats/pkl", exist_ok=True)
+        beta_path = os.path.join(f"{env_name}/stats/pkl", f"{name}.pkl")
+
+        with open(beta_path, "wb") as f:
+            pickle.dump(betas, f)
+
+def load_betas(env_name, name = "beta"):
+
+    beta_path = os.path.join(f"{env_name}/stats/pkl", f"{name}.pkl")
+
+    with open(beta_path, "rb") as f:
+        betas = pickle.load(f)
+    
+    return betas
+
+def save_epsilons(env_name, epsilons, name = "epsilon"):
+
+    os.makedirs(f"{env_name}/stats/pkl", exist_ok=True)
+    beta_path = os.path.join(f"{env_name}/stats/pkl", f"{name}.pkl")
+
+    with open(beta_path, "wb") as f:
+        pickle.dump(epsilons, f)
+
+def load_epsilons(env_name, name = "epsilon"):
+    
+    beta_path = os.path.join(f"{env_name}/stats/pkl", f"{name}.pkl")
+
+    with open(beta_path, "rb") as f:
+        epsilons = pickle.load(f)
+
+        return epsilons

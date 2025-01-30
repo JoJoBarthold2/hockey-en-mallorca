@@ -24,6 +24,8 @@ opponent = h_env.BasicOpponent()
 
 stats = []
 losses = []
+betas = []
+epsilons = []
 
 frame_idx = 0
 
@@ -85,6 +87,8 @@ for episode in range(max_episodes):
     if episode % 20 == 0:    
         losses.extend(loss)
         stats.append([episode, total_reward, t + 1])
+        betas.extend(agent.beta)
+        epsilons.extend(agent._eps)
         print(f"Episode {episode+1}/{max_episodes}, Total Reward: {total_reward}, Beta: {agent.beta}")
     
     if agent._config["use_eps_decay"] and episode > int(0.5 * max_episodes):
@@ -92,9 +96,14 @@ for episode in range(max_episodes):
         
     if ((episode) % int(max_episodes/10) == 0) and episode > 0:
         agent.Q.save(env_name, name = f"episode_{episode}")
+        sf.save_betas(env_name, betas)
+        sf.save_epsilons(env_name, epsilons)
+        sf.save_stats(env_name, stats, losses)
 
     logging.debug(f" time per frame: {(time.time()-time_start)/frame_idx}")
     logging.debug(f" mean sample time: {np.mean(agent.sample_times)}")
 
 agent.Q.save(env_name, name = "training_finished")
+sf.save_betas(env_name, betas)
+sf.save_epsilons(env_name, epsilons)
 sf.save_stats(env_name, stats, losses)

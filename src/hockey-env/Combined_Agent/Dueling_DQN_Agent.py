@@ -1,5 +1,7 @@
+import os
 import time     # Only for debugging
 import torch
+import pickle
 import random
 import logging
 import numpy as np
@@ -55,7 +57,6 @@ class Dueling_DQN_Agent(object):
         self.use_n_step = n_steps > 1
 
         self.buffer = mem.PrioritizedReplayBuffer(
-            obs_dim = state_space.shape[0],
             max_size = max_size,
             alpha = alpha,
             batch_size = self._config["batch_size"],
@@ -203,3 +204,4 @@ class Dueling_DQN_Agent(object):
             self._update_target_net()
                 
         return losses
+        
