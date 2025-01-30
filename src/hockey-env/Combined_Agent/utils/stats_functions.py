@@ -122,19 +122,19 @@ def load_epsilons(env_name, name = "epsilon"):
 
         return epsilons
     
-def save_winrate(env_name, winrate, name = "winrate"):
+def save_winrate(env_name, winrates, name = "winrates"):
 
     os.makedirs(f"{env_name}/stats/pkl", exist_ok=True)
     winrate_path = os.path.join(f"{env_name}/stats/pkl", f"{name}.pkl")
 
     with open(winrate_path, "wb") as f:
-        pickle.dump(winrate, f)
+        pickle.dump(winrates, f)
 
-def load_winrate(env_name, name = "winrate"):
+def load_winrates(env_name, name = "winrates"):
     
     winrate_path = os.path.join(f"{env_name}/stats/pkl", f"{name}.pkl")
 
     with open(winrate_path, "rb") as f:
-        winrate = pickle.load(f)
+        winrates = pickle.load(f)
 
-        return winrate
+        return winrates
