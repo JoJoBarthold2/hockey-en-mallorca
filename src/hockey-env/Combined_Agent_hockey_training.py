@@ -13,7 +13,7 @@ SEED_TRAIN_2 = 1312
 seed = SEED_TRAIN_1
 
 reload(h_env)
-env_name = "Combined_test_1_50k_30k_(128,128)"
+env_name = "Combined_test_2_50k_30k_(128,128)"
 env = h_env.HockeyEnv()
 
 state_space = env.observation_space
