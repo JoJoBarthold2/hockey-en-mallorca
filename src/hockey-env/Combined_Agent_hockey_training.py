@@ -13,7 +13,7 @@ SEED_TRAIN_2 = 1312
 seed = SEED_TRAIN_1
 
 reload(h_env)
-env_name = "Combined_test_3_DuelingDDQN_50k_30k_(128,128)"
+env_name = "Combined_test_4_DuelingDDQN_50k_30k_(128,128)"
 env = h_env.HockeyEnv()
 
 state_space = env.observation_space
@@ -28,7 +28,7 @@ opponent3 = agent
 
 opponents = [opponent0, opponent1, opponent2, opponent3]
 
-match_history = np.zeros((len(opponents), 20))
+match_history = np.full((len(opponents), 20), -1)
 
 iterations_to_train_against_random = 10000
 
