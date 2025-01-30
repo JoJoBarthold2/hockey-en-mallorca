@@ -3,7 +3,7 @@ import numpy as np
 import logging
 import time
 
-from Combined_Agent.Dueling_DDQN_Agent import Dueling_DDQN_Agent
+from Combined_Agent.Dueling_DQN_Agent import Dueling_DQN_Agent
 from Combined_Agent.utils.random_agent import RandomAgent
 import Combined_Agent.utils.stats_functions as sf
 import hockey.hockey_env as h_env
@@ -19,7 +19,7 @@ env = h_env.HockeyEnv()
 state_space = env.observation_space
 action_space = env.discrete_action_space
 
-agent = Dueling_DDQN_Agent(state_space, action_space, seed = seed, use_eps_decay = True, hidden_sizes = [128, 128])
+agent = Dueling_DQN_Agent(state_space, action_space, seed = seed, use_eps_decay = True, hidden_sizes = [128, 128])
 
 opponent0 = RandomAgent(seed = seed)
 opponent1 = h_env.BasicOpponent()
@@ -46,7 +46,7 @@ winrates = []
 frame_idx = 0
 
 max_episodes = 50000
-iterations_to_train_against_random = max_episodes/5
+iterations_to_train_against_random = max_episodes/5     # Better if we just try with 1000 probably
 max_steps = 30000
 
 train_iterations = 32  # Number of training steps per episode
