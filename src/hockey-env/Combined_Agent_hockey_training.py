@@ -46,7 +46,7 @@ winrates = np.empty((0, 4))
 frame_idx = 0
 
 max_episodes = 50000
-iterations_to_train_against_random = max_episodes/5     # Better if we just try with 1000 probably
+iterations_to_train_against_random = 1000     # Better if we just try with 1000 probably
 max_steps = 30000
 
 train_iterations = 32  # Number of training steps per episode
