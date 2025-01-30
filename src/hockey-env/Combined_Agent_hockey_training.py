@@ -13,7 +13,7 @@ SEED_TRAIN_2 = 1312
 seed = SEED_TRAIN_1
 
 reload(h_env)
-env_name = "Combined_test_2_50k_30k_(128,128)"
+env_name = "Combined_test_3_DuelingDDQN_50k_30k_(128,128)"
 env = h_env.HockeyEnv()
 
 state_space = env.observation_space
@@ -45,7 +45,7 @@ winrates = []
 
 frame_idx = 0
 
-max_episodes = 500000
+max_episodes = 50000
 iterations_to_train_against_random = max_episodes/5
 max_steps = 30000
 
@@ -109,7 +109,7 @@ for episode in range(max_episodes):
 
     loss = agent.train(train_iterations)
 
-    if episode % 50 == 0:    
+    if episode % 10 == 0:    
         losses.extend(loss)
         stats.append([episode, total_reward, t + 1])
         betas.append(agent.beta)
