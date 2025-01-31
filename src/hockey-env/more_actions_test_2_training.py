@@ -43,7 +43,7 @@ epsilons = []
 
 frame_idx = 0
 
-max_episodes = 100
+max_episodes = 150000
 max_steps = 30000
 
 train_iterations = 32  # Number of training steps per episode
