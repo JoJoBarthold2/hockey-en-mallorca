@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import os
 
-from Combined_Agent.utils.Dueling_DQN_feedforward import Feedforward
+from Combined_Agent_Double.utils.Dueling_DQN_feedforward import Feedforward
 
 class QFunction(Feedforward):
     

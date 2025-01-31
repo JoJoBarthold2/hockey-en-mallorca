@@ -6,9 +6,9 @@ import random
 import logging
 import numpy as np
 
-from Combined_Agent.QFunction import QFunction
-import Combined_Agent.utils.n_step_replay_buffer as rb
-import Combined_Agent.utils.prioritized_replay_buffer as mem
+from Combined_Agent_Double.QFunction import QFunction
+import Combined_Agent_Double.utils.n_step_replay_buffer as rb
+import Combined_Agent_Double.utils.prioritized_replay_buffer as mem
 
 class Dueling_DDQN_Agent(object):
 

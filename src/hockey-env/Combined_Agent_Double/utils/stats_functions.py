@@ -138,7 +138,7 @@ def plot_epsilon_evolution(env_name, epsilons, save_figure = True, name = "epsil
     plt.plot(epsilons, marker='o', linestyle='-', color='b', label='Epsilon Values')
     plt.xlabel('Iteration')
     plt.ylabel('Epsilon Value')
-    plt.title('Evolution of Beta Values')
+    plt.title('Evolution of Epsilon Values')
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.legend()
     if save_figure:
