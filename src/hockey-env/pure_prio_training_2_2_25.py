@@ -5,7 +5,7 @@ import logging
 import random
 import time
 import copy
-
+import os
 from Prio_n_step_Agent.utils.actions import MORE_ACTIONS
 from Prio_n_step_Agent.Prio_DQN_Agent import Prio_DQN_Agent
 from Prio_n_step_Agent.utils.random_agent import RandomAgent
@@ -22,9 +22,11 @@ random.seed(seed)
 
 reload(h_env)
 env_name = "../weights/pure_prio_training_2_2_25"
+if not os.path.exists(env_name):
+    os.makedirs(env_name + "/")
 env = h_env.HockeyEnv()
 logging.basicConfig(
-    filename=env_name + ".log",
+    filename=env_name + ".txt",
     filemode="a",
     format="%(asctime)s,%(msecs)03d %(name)s %(levelname)s %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
@@ -55,8 +57,8 @@ opponent1 = h_env.BasicOpponent()
 opponent2 = h_env.BasicOpponent(weak=False)
 opponent3 = "Agent"
 
-opponents = [opponent0, opponent1, opponent2, opponent3]
-opponents_names = ["Random", "Weak", "NonWeak", "Prio Agent"]
+opponents = [opponent0, opponent1, opponent2]  # , opponent3]
+opponents_names = ["Random", "Weak", "NonWeak"]  # , "Prio Agent"]
 
 match_history = [[] for _ in opponents]
 
@@ -67,7 +69,7 @@ epsilons = []
 
 frame_idx = 0
 
-max_episodes = 50000
+max_episodes = 20
 games_to_play = 50
 max_steps = 30000
 
