@@ -152,7 +152,7 @@ def save_match_history(env_name, match_history, name = "match_history"):
 
 def load_match_history(env_name, name = "match_history"):
     
-    data= np.load(f"{env_name}/stats/pkl/{name}.npz")
+    data= np.load(f"{env_name}/stats/pkl/{name}.npz", allow_pickle=True)
     return data["match_history"]
 
 import matplotlib.pyplot as plt
