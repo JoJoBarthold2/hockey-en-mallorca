@@ -21,7 +21,7 @@ USE_MORE_ACTIONS = True
 random.seed(seed)
 
 reload(h_env)
-env_name = "../weights/pure_prio_training_2_2_25"
+env_name = "pure_prio_training_2_2_25"
 
 env = h_env.HockeyEnv()
 logging.basicConfig(level=logging.INFO)
