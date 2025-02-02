@@ -62,7 +62,7 @@ epsilons = []
 
 frame_idx = 0
 
-max_episodes = 20
+max_episodes = 50000
 games_to_play = 50
 max_steps = 30000
 
