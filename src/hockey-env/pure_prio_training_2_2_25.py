@@ -23,7 +23,15 @@ random.seed(seed)
 reload(h_env)
 env_name = "../weights/pure_prio_training_2_2_25"
 env = h_env.HockeyEnv()
+logging.basicConfig(
+    filename=env_name + ".log",
+    filemode="a",
+    format="%(asctime)s,%(msecs)03d %(name)s %(levelname)s %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    level=logging.INFO,
+)
 
+logging.info("Running Urban Planning")
 state_space = env.observation_space
 
 if USE_MORE_ACTIONS:
@@ -135,14 +143,14 @@ for episode in range(max_episodes):
 
         loss = agent.train(train_iterations)
         match_history[selected].append(info["winner"])
-        print(info["winner"])
+        logging.debug(info["winner"])
 
         if game % int(games_to_play / 2) == 0:
             losses.extend(loss)
             stats.append([episode, total_reward, t + 1])
             betas.append(agent.beta)
             epsilons.append(agent._eps)
-            print(
+            logging.info(
                 f"Episode {episode+1}/{max_episodes}, Game {game+1}/{games_to_play} - Total Reward: {total_reward}, Beta: {agent.beta}"
             )
 
