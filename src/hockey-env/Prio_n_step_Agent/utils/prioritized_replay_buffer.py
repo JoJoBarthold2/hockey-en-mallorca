@@ -2,7 +2,8 @@ import numpy.random as random
 import numpy as np
 import logging
 
-from Combined_Agent.utils.segment_tree import SumSegmentTree, MinSegmentTree
+from Prio_n_step_Agent.utils.segment_tree import SumSegmentTree, MinSegmentTree
+
 
 class PrioritizedReplayBuffer:
     """Prioritized Replay buffer. Adapted to be similar to Memory from the lecture
@@ -45,7 +46,9 @@ class PrioritizedReplayBuffer:
         self.sum_tree = SumSegmentTree(tree_capacity)
         self.min_tree = MinSegmentTree(tree_capacity)
 
-    def store(self, transitions_new):       # corresponding to add_transition in original memory.py
+    def store(
+        self, transitions_new
+    ):  # corresponding to add_transition in original memory.py
         if self.size == 0:
             # Transitions shape:  (array([-0.56146526, -0.8275003 , -0.9523803 ], dtype=float32), 3, -4.787382871690309, array([-0.6188719 , -0.78549194, -1.4230055 ], dtype=float32), False)
 

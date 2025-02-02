@@ -134,42 +134,80 @@ def load_epsilons(env_name, name = "epsilon"):
         return epsilons
 
 def plot_epsilon_evolution(env_name, epsilons, save_figure = True, name = "epsilon_evolution"):
+    
     plt.figure(figsize=(10, 5))
     plt.plot(epsilons, marker='o', linestyle='-', color='b', label='Epsilon Values')
     plt.xlabel('Iteration')
     plt.ylabel('Epsilon Value')
-    plt.title('Evolution of Beta Values')
+    plt.title('Evolution of Epsilon Values')
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.legend()
     if save_figure:
         _save_plot(env_name, name)
 
-def save_winrates(env_name, winrates, name = "winrates"):
+def save_match_history(env_name, match_history, name = "match_history"):
 
-    os.makedirs(f"{env_name}/stats/pkl", exist_ok=True)
-    winrate_path = os.path.join(f"{env_name}/stats/pkl", f"{name}.pkl")
+    os.makedirs(f"{env_name}/stats/pkl", exist_ok = True)
+    match_history_arr = np.array(match_history, dtype=object)
+    np.savez(f"{env_name}/stats/pkl/{name}", match_history = match_history_arr)
 
-    with open(winrate_path, "wb") as f:
-        pickle.dump(winrates, f)
-
-def load_winrates(env_name, name = "winrates"):
+def load_match_history(env_name, name = "match_history"):
     
-    winrate_path = os.path.join(f"{env_name}/stats/pkl", f"{name}.pkl")
+    data= np.load(f"{env_name}/stats/pkl/{name}.npz", allow_pickle=True)
+    return data["match_history"].tolist()
 
-    with open(winrate_path, "rb") as f:
-        winrates = pickle.load(f)
+import matplotlib.pyplot as plt
+import numpy as np
 
-        return winrates
+def plot_match_evolution_by_chunks(env_name, match_history, opponents_names, chunk_size, name="match_evolution", save_figure = True):
+
+    n_opponents = len(opponents_names)
+    fig, axes = plt.subplots(n_opponents, 1, figsize=(10, 4 * n_opponents), sharex=False)
     
-def plot_winrates_evolution(env_name, winrates, save_figure = True, name = "winrate_evolution"):
-
-    plt.figure(figsize=(10, 5))
-    for i in range(winrates.shape[1]):
-        plt.plot(winrates[:, i], marker='o', linestyle='-', label=f'Component {i}')
-    plt.xlabel('Iteration')
-    plt.ylabel('Value')
-    plt.title('Evolution of Winrates')
-    plt.grid(True, linestyle='--', alpha=0.6)
-    plt.legend()
+    if n_opponents == 1:
+        axes = [axes]
+        
+    for i in range(n_opponents):
+        results = match_history[i]
+        ax = axes[i]
+        if len(results) == 0:
+            ax.set_title(f"{opponents_names[i]} (no games played)")
+            continue
+        
+        chunks = [results[j:j+chunk_size] for j in range(0, len(results), chunk_size)]
+        chunk_indices = np.arange(1, len(chunks) + 1)
+        
+        win_rates = []
+        wins_chunk = []
+        draws_chunk = []
+        losses_chunk = []
+        
+        for chunk in chunks:
+            wins = chunk.count(1)
+            draws = chunk.count(0)
+            losses = chunk.count(-1)
+            total = wins + draws + losses
+            wr = wins / total if total > 0 else 0
+            win_rates.append(wr)
+            wins_chunk.append(wins)
+            draws_chunk.append(draws)
+            losses_chunk.append(losses)
+        
+        ax.plot(chunk_indices, wins_chunk, marker="o", label="Wins", color="green")
+        ax.plot(chunk_indices, draws_chunk, marker="o", label="Draws", color="gray")
+        ax.plot(chunk_indices, losses_chunk, marker="o", label="Losses", color="red")
+        ax.set_ylabel("Number of Matches")
+        ax.set_title(f"Evolution for {opponents_names[i]}")
+        
+        ax2 = ax.twinx()
+        ax2.plot(chunk_indices, win_rates, marker="o", linestyle="--", label="Win Rate", color="blue")
+        ax2.set_ylabel("Win Rate")
+        ax2.set_ylim(0, 1)
+        
+        lines, labels = ax.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        ax.legend(lines + lines2, labels + labels2, loc="upper left")
+    
+    fig.tight_layout()
     if save_figure:
         _save_plot(env_name, name)
