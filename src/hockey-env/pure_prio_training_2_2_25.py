@@ -22,16 +22,9 @@ random.seed(seed)
 
 reload(h_env)
 env_name = "../weights/pure_prio_training_2_2_25"
-if not os.path.exists(env_name):
-    os.makedirs(env_name + "/")
+
 env = h_env.HockeyEnv()
-logging.basicConfig(
-    filename=env_name + ".txt",
-    filemode="a",
-    format="%(asctime)s,%(msecs)03d %(name)s %(levelname)s %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    level=logging.INFO,
-)
+logging.basicConfig(level=logging.INFO)
 
 logging.info("Running Urban Planning")
 state_space = env.observation_space
