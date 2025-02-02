@@ -98,9 +98,6 @@ for episode in range(max_episodes):
                     a2 = env.discrete_to_continous_action(a2)
 
             full_action = np.hstack([a1_cont, a2])
-            if t == 0:
-                print(f"a1: {a1_cont}")
-                print(f"a2: {a2}")
 
             start_time = time.time()        # Debbuging
 
@@ -137,17 +134,17 @@ for episode in range(max_episodes):
     if agent._config["use_eps_decay"] and episode > int(0.8 * max_episodes):
         agent._perform_epsilon_decay()  
 
-    #if ((episode) % int(max_episodes/20) == 0) and episode > 0:  
-    agent.Q.save(env_name, name = f"episode_{episode}")
-    sf.save_betas(env_name, betas)
-    sf.save_epsilons(env_name, epsilons)
-    sf.save_stats(env_name, stats, losses)
-    sf.save_match_history(env_name, match_history)
-    sf.plot_returns(stats, env_name)
-    sf.plot_losses(losses, env_name)
-    sf.plot_beta_evolution(env_name, betas)
-    sf.plot_epsilon_evolution(env_name, epsilons)
-    sf.plot_match_evolution_by_chunks(env_name, match_history, opponents_names, games_to_play)
+    if ((episode) % int(max_episodes/20) == 0) and episode > 0:  
+        agent.Q.save(env_name, name = f"episode_{episode}")
+        sf.save_betas(env_name, betas)
+        sf.save_epsilons(env_name, epsilons)
+        sf.save_stats(env_name, stats, losses)
+        sf.save_match_history(env_name, match_history)
+        sf.plot_returns(stats, env_name)
+        sf.plot_losses(losses, env_name)
+        sf.plot_beta_evolution(env_name, betas)
+        sf.plot_epsilon_evolution(env_name, epsilons)
+        sf.plot_match_evolution_by_chunks(env_name, match_history, opponents_names, games_to_play)
 
     logging.debug(f" time per frame: {(time.time()-time_start)/frame_idx}")
     logging.debug(f" mean sample time: {np.mean(agent.sample_times)}")

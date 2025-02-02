@@ -148,12 +148,13 @@ def plot_epsilon_evolution(env_name, epsilons, save_figure = True, name = "epsil
 def save_match_history(env_name, match_history, name = "match_history"):
 
     os.makedirs(f"{env_name}/stats/pkl", exist_ok = True)
-    np.savez(f"{env_name}/stats/pkl/{name}", match_history = match_history)
+    match_history_arr = np.array(match_history, dtype=object)
+    np.savez(f"{env_name}/stats/pkl/{name}", match_history = match_history_arr)
 
 def load_match_history(env_name, name = "match_history"):
     
     data= np.load(f"{env_name}/stats/pkl/{name}.npz", allow_pickle=True)
-    return data["match_history"]
+    return data["match_history"].tolist()
 
 import matplotlib.pyplot as plt
 import numpy as np
