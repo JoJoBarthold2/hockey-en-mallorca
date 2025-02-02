@@ -134,6 +134,7 @@ def load_epsilons(env_name, name = "epsilon"):
         return epsilons
 
 def plot_epsilon_evolution(env_name, epsilons, save_figure = True, name = "epsilon_evolution"):
+    
     plt.figure(figsize=(10, 5))
     plt.plot(epsilons, marker='o', linestyle='-', color='b', label='Epsilon Values')
     plt.xlabel('Iteration')
@@ -144,32 +145,48 @@ def plot_epsilon_evolution(env_name, epsilons, save_figure = True, name = "epsil
     if save_figure:
         _save_plot(env_name, name)
 
-def save_winrates(env_name, winrates, name = "winrates"):
+def save_match_history(env_name, match_history, name = "match_history"):
 
-    os.makedirs(f"{env_name}/stats/pkl", exist_ok=True)
-    winrate_path = os.path.join(f"{env_name}/stats/pkl", f"{name}.pkl")
+    os.makedirs(f"{env_name}/stats/pkl", exist_ok = True)
+    np.savez(f"{env_name}/stats/pkl/{name}", match_history = match_history)
 
-    with open(winrate_path, "wb") as f:
-        pickle.dump(winrates, f)
-
-def load_winrates(env_name, name = "winrates"):
+def load_match_history(env_name, name = "match_history"):
     
-    winrate_path = os.path.join(f"{env_name}/stats/pkl", f"{name}.pkl")
+    data= np.load(f"{env_name}/stats/pkl/{name}.npz")
+    return data["match_history"]
 
-    with open(winrate_path, "rb") as f:
-        winrates = pickle.load(f)
+import matplotlib.pyplot as plt
+import numpy as np
 
-        return winrates
+def plot_match_history(env_name, match_history, opponents, name="match_history", save_figure = True):
+
+    match_history = np.array(match_history)
+
+    losses = np.sum(match_history == -1, axis=1)
+    draws = np.sum(match_history == 0, axis=1)
+    wins = np.sum(match_history == 1, axis=1)
+
+    total_matches = wins + draws + losses
     
-def plot_winrates_evolution(env_name, winrates, save_figure = True, name = "winrate_evolution"):
+    win_rates = np.where(total_matches > 0, wins / total_matches, 0)
 
-    plt.figure(figsize=(10, 5))
-    for i in range(winrates.shape[1]):
-        plt.plot(winrates[:, i], marker='o', linestyle='-', label=f'Component {i}')
-    plt.xlabel('Iteration')
-    plt.ylabel('Value')
-    plt.title('Evolution of Winrates')
-    plt.grid(True, linestyle='--', alpha=0.6)
-    plt.legend()
+    n = len(opponents)
+    indices = np.arange(n)
+    width = 0.25
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.bar(indices - width, losses, width, label='Losses (-1)', color='red')
+    ax.bar(indices, draws, width, label='Draws (0)', color='gray')
+    ax.bar(indices + width, wins, width, label='Wins (1)', color='green')
+    for i in range(n):
+        max_count = max(losses[i], draws[i], wins[i])
+        ax.text(indices[i], max_count + 0.5, f"Winrate: {win_rates[i]:.1%}", ha='center')
+    ax.set_xlabel("Opponents")
+    ax.set_ylabel("Number of Matches")
+    ax.set_title("Results by Opponent")
+    ax.set_xticks(indices)
+    ax.set_xticklabels(opponents)
+    ax.legend()
+    fig.tight_layout()
     if save_figure:
         _save_plot(env_name, name)
+    plt.close()
