@@ -103,7 +103,7 @@ class Dueling_DDQN_Agent(object):
         self.Q_target.load_state_dict(self.Q.state_dict())
     
     def act(self, state):       # Fuction to be consistent with naming for self-play
-        self.perform_greedy_action(state, eps = 0)
+        return self.perform_greedy_action(state, eps = 0)
 
     def perform_greedy_action(self, state, eps = None):
 
