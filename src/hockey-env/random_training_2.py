@@ -20,7 +20,7 @@ USE_MORE_ACTIONS = True
 random.seed(seed)
 
 reload(h_env)
-env_name = "random_training_1"
+env_name = "random_training_2"
 env = h_env.HockeyEnv()
 
 state_space = env.observation_space
@@ -31,7 +31,7 @@ else:
     action_space = env.discrete_action_space
 
 agent = Dueling_DDQN_Agent(state_space, action_space, seed = seed, eps = 0.01, learning_rate = 0.0001, hidden_sizes = [256, 256], n_steps = 5)
-agent.Q.load("more_actions_test_1_150k_30k_(256_256)")
+agent.Q.load("more_actions_test_2_150k_30k_(256_256)_nstep_5")
 
 opponent0 = RandomAgent(seed = seed)
 opponent1 = h_env.BasicOpponent()
@@ -50,8 +50,8 @@ epsilons = []
 
 frame_idx = 0
 
-max_episodes = 50
-games_to_play = 20
+max_episodes = 1000
+games_to_play = 50
 max_steps = 30000
 
 train_iterations = 32  # Number of training steps per episode

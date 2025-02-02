@@ -50,8 +50,8 @@ epsilons = []
 
 frame_idx = 0
 
-max_episodes = 50
-games_to_play = 20
+max_episodes = 1000
+games_to_play = 50
 max_steps = 30000
 
 train_iterations = 32  # Number of training steps per episode

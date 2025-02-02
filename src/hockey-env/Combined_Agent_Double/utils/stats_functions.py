@@ -158,35 +158,55 @@ def load_match_history(env_name, name = "match_history"):
 import matplotlib.pyplot as plt
 import numpy as np
 
-def plot_match_history(env_name, match_history, opponents, name="match_history", save_figure = True):
+def plot_match_evolution_by_chunks(env_name, match_history, opponents_names, chunk_size, name="match_evolution", save_figure = True):
 
-    match_history = np.array(match_history)
-
-    losses = np.sum(match_history == -1, axis=1)
-    draws = np.sum(match_history == 0, axis=1)
-    wins = np.sum(match_history == 1, axis=1)
-
-    total_matches = wins + draws + losses
+    n_opponents = len(opponents_names)
+    fig, axes = plt.subplots(n_opponents, 1, figsize=(10, 4 * n_opponents), sharex=False)
     
-    win_rates = np.where(total_matches > 0, wins / total_matches, 0)
-
-    n = len(opponents)
-    indices = np.arange(n)
-    width = 0.25
-    fig, ax = plt.subplots(figsize=(10, 6))
-    ax.bar(indices - width, losses, width, label='Losses (-1)', color='red')
-    ax.bar(indices, draws, width, label='Draws (0)', color='gray')
-    ax.bar(indices + width, wins, width, label='Wins (1)', color='green')
-    for i in range(n):
-        max_count = max(losses[i], draws[i], wins[i])
-        ax.text(indices[i], max_count + 0.5, f"Winrate: {win_rates[i]:.1%}", ha='center')
-    ax.set_xlabel("Opponents")
-    ax.set_ylabel("Number of Matches")
-    ax.set_title("Results by Opponent")
-    ax.set_xticks(indices)
-    ax.set_xticklabels(opponents)
-    ax.legend()
+    if n_opponents == 1:
+        axes = [axes]
+        
+    for i in range(n_opponents):
+        results = match_history[i]
+        ax = axes[i]
+        if len(results) == 0:
+            ax.set_title(f"{opponents_names[i]} (no games played)")
+            continue
+        
+        chunks = [results[j:j+chunk_size] for j in range(0, len(results), chunk_size)]
+        chunk_indices = np.arange(1, len(chunks) + 1)
+        
+        win_rates = []
+        wins_chunk = []
+        draws_chunk = []
+        losses_chunk = []
+        
+        for chunk in chunks:
+            wins = chunk.count(1)
+            draws = chunk.count(0)
+            losses = chunk.count(-1)
+            total = wins + draws + losses
+            wr = wins / total if total > 0 else 0
+            win_rates.append(wr)
+            wins_chunk.append(wins)
+            draws_chunk.append(draws)
+            losses_chunk.append(losses)
+        
+        ax.plot(chunk_indices, wins_chunk, marker="o", label="Wins", color="green")
+        ax.plot(chunk_indices, draws_chunk, marker="o", label="Draws", color="gray")
+        ax.plot(chunk_indices, losses_chunk, marker="o", label="Losses", color="red")
+        ax.set_ylabel("Number of Matches")
+        ax.set_title(f"Evolution for {opponents_names[i]}")
+        
+        ax2 = ax.twinx()
+        ax2.plot(chunk_indices, win_rates, marker="o", linestyle="--", label="Win Rate", color="blue")
+        ax2.set_ylabel("Win Rate")
+        ax2.set_ylim(0, 1)
+        
+        lines, labels = ax.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        ax.legend(lines + lines2, labels + labels2, loc="upper left")
+    
     fig.tight_layout()
     if save_figure:
         _save_plot(env_name, name)
-    plt.close()
