@@ -10,3 +10,7 @@ singularity build --fakeroot /path/to/container.sif container.def
 Once the container is created, it can be used as follows:
 singularity run /path/to/container.sif python3 ./my_script.py
 
+
+Command to connect to the server
+=================================
+
