@@ -21,12 +21,12 @@ USE_MORE_ACTIONS = True
 random.seed(seed)
 
 reload(h_env)
-env_name = "pure_prio_training_2_2_25"
+env_name = "combined_training_6_2_25"
 
 env = h_env.HockeyEnv()
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, filename="combined_training_6_2_25.log")
 
-logging.info("Running Urban Planning")
+
 state_space = env.observation_space
 
 if USE_MORE_ACTIONS:
