@@ -5,13 +5,15 @@ import pickle
 import random
 import logging
 import numpy as np
+import uuid
+from comprl.client import Agent
 
 from Prio_n_step_Agent.QFunction import QFunction
 import Prio_n_step_Agent.utils.n_step_replay_buffer as rb
 import Prio_n_step_Agent.utils.prioritized_replay_buffer as mem
 
 
-class Prio_DQN_Agent(object):
+class Prio_DQN_Agent(Agent):
     """Agent implementing Q-learning with NN function approximation."""
 
     def __init__(
@@ -117,6 +119,25 @@ class Prio_DQN_Agent(object):
     def act(self, state):  # Fuction to be consistent with naming for self-play
         self.perform_greedy_action(state, eps=0)
 
+    def get_step(self, state):
+        state = np.array(state)
+        print("state:", state)
+        print("got state")
+        print(self.Q.greedyAction(state))
+        actions = self.Q.greedyAction(state).tolist()
+        print("actions:", actions)
+        action_list = list(map(float, actions))
+        print(type(action_list), action_list)
+
+        return
+
+    def on_end_game(self, result: bool, stats: list[float]) -> None:
+        text_result = "won" if result else "lost"
+        print(
+            f"Game ended: {text_result} with my score: "
+            f"{stats[0]} against the opponent with score: {stats[1]}"
+        )
+
     def perform_greedy_action(self, state, eps=None):
 
         if eps is None:
@@ -143,6 +164,10 @@ class Prio_DQN_Agent(object):
             raise ValueError(
                 'Error: Epsilon decay mode must be "linear" or "exponential".'
             )
+
+    def on_start_game(self, game_id) -> None:
+        game_id = uuid.UUID(int=int.from_bytes(game_id))
+        print(f"Game started (id: {game_id})")
 
     def train(self, iter_fit=32):
 

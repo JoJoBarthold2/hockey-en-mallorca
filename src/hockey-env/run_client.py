@@ -5,9 +5,21 @@ import uuid
 
 import hockey.hockey_env as h_env
 import numpy as np
-
-
 from comprl.client import Agent, launch_client
+from gymnasium import spaces
+
+from Prio_n_step_Agent.Prio_DQN_Agent import Prio_DQN_Agent
+from Prio_n_step_Agent.utils.random_agent import RandomAgent
+from Prio_n_step_Agent.utils.actions import MORE_ACTIONS
+import Prio_n_step_Agent.utils.stats_functions as sf
+
+SEED_TRAIN_1 = 7489
+SEED_TRAIN_2 = 1312
+SEEDS_TEST = [291 + i for i in range(10)]
+
+seed = SEED_TRAIN_1
+
+USE_MORE_ACTIONS = True
 
 
 class RandomAgent(Agent):
@@ -66,7 +78,7 @@ def initialize_agent(agent_args: list[str]) -> Agent:
     parser.add_argument(
         "--agent",
         type=str,
-        choices=["weak", "strong", "random"],
+        choices=["weak", "strong", "random", "Prio_DQN"],
         default="weak",
         help="Which agent to use.",
     )
@@ -80,6 +92,28 @@ def initialize_agent(agent_args: list[str]) -> Agent:
         agent = HockeyAgent(weak=False)
     elif args.agent == "random":
         agent = RandomAgent()
+    elif args.agent == "Prio_DQN":
+        env_name = "../weights/pure_prio_training_2_2_25"
+        env = h_env.HockeyEnv()
+        h_env.HockeyEnv().seed(seed)
+
+        state_space = env.observation_space
+
+        if USE_MORE_ACTIONS:
+            action_space = spaces.Discrete(len(MORE_ACTIONS))
+        else:
+            action_space = env.discrete_action_space
+
+        agent = Prio_DQN_Agent(
+            state_space,
+            action_space,
+            seed=seed,
+            eps=0.01,
+            learning_rate=0.0001,
+            hidden_sizes=[256, 256],
+            n_steps=5,
+        )
+        agent.Q.load(env_name, name="episode_2500")
     else:
         raise ValueError(f"Unknown agent: {args.agent}")
 
