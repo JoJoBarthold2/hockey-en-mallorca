@@ -113,7 +113,7 @@ def initialize_agent(agent_args: list[str]) -> Agent:
             hidden_sizes=[256, 256],
             n_steps=5,
         )
-        agent.Q.load(env_name, name="episode_2500")
+        agent.Q.load(env_name, name="episode_5000")
     else:
         raise ValueError(f"Unknown agent: {args.agent}")
 

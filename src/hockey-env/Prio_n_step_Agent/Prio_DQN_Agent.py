@@ -25,13 +25,16 @@ class Prio_DQN_Agent(Agent):
         beta=0.6,
         max_size=100000,
         n_steps=1,
+        use_more_actions=True,
+        env=None,
         **userconfig,
     ):
 
         self._state_space = state_space
         self._action_space = action_space
         self._action_n = action_space.n
-
+        self.use_more_actions = use_more_actions
+        self.env = env
         self.train_iter = 0
 
         self._config = {
@@ -123,12 +126,14 @@ class Prio_DQN_Agent(Agent):
     def get_step(self, state):
         state = np.array(state)
 
-        # print("got state")
+        #
 
         action = self.Q.greedyAction(state).tolist()
-        continous_action = MORE_ACTIONS[action]
+        if self.use_more_actions:
+            continous_action = MORE_ACTIONS[action]
+        else:
+            continous_action = self.env.discrete_to_continous_action(action)
         action_list = list(map(float, continous_action))
-        # print(type(action_list), action_list)
 
         return action_list
 
