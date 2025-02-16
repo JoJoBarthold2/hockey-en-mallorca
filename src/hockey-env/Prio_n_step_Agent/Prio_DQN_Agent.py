@@ -11,6 +11,7 @@ from comprl.client import Agent
 from Prio_n_step_Agent.QFunction import QFunction
 import Prio_n_step_Agent.utils.n_step_replay_buffer as rb
 import Prio_n_step_Agent.utils.prioritized_replay_buffer as mem
+from Prio_n_step_Agent.utils.actions import MORE_ACTIONS
 
 
 class Prio_DQN_Agent(Agent):
@@ -121,15 +122,15 @@ class Prio_DQN_Agent(Agent):
 
     def get_step(self, state):
         state = np.array(state)
-        print("state:", state)
-        print("got state")
-        print(self.Q.greedyAction(state))
-        actions = self.Q.greedyAction(state).tolist()
-        print("actions:", actions)
-        action_list = list(map(float, actions))
-        print(type(action_list), action_list)
 
-        return
+        # print("got state")
+
+        action = self.Q.greedyAction(state).tolist()
+        continous_action = MORE_ACTIONS[action]
+        action_list = list(map(float, continous_action))
+        # print(type(action_list), action_list)
+
+        return action_list
 
     def on_end_game(self, result: bool, stats: list[float]) -> None:
         text_result = "won" if result else "lost"
