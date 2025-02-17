@@ -24,12 +24,12 @@ USE_MORE_ACTIONS = True
 random.seed(seed)
 
 reload(h_env)
-env_name = "pure_prio_training_2_2_25"
+env_name = "prio_agent_self_play_17_2_25"
 
 env = h_env.HockeyEnv()
 logging.basicConfig(level=logging.INFO)
 
-logging.info("Running Urban Planning")
+
 state_space = env.observation_space
 
 if USE_MORE_ACTIONS:
@@ -133,7 +133,7 @@ epsilons = []
 
 frame_idx = 0
 
-max_episodes = 50000
+max_episodes = 10000
 games_to_play = 50
 max_steps = 30000
 
@@ -146,11 +146,13 @@ time_start = time.time()  # Debugging
 
 for episode in range(max_episodes):
     saved_weights = []
+
     if len(saved_weights) > 0:
-        selected = random.randint(0, len(opponents) - 2)
+        selected = random.randint(0, len(opponents) - 1)
 
     else:
-        selected = random.randint(0, len(opponents) - 1)
+        selected = random.randint(0, len(opponents) - 2)
+        print(opponents_names[selected])
 
     opponent = opponents[selected]
 
@@ -173,14 +175,24 @@ for episode in range(max_episodes):
 
             done = False
 
-            a1 = agent.get_step(state)
+            a1 = agent.perform_greedy_action(state)
 
-            if opponents_names in ["Random" "Weak", "NonWeak"]:
-                a2 = opponent.act(obs_agent2)
+            if USE_MORE_ACTIONS:
+                a1_cont = MORE_ACTIONS[a1]
             else:
-                a2 = opponent.get_step(obs_agent2)
+                a1_cont = env.discrete_to_continous_action(a1)
 
-            full_action = np.hstack([a1, a2])
+            if opponents_names[selected] in ["Random", "Weak", "NonWeak"]:
+                a2 = opponent.act(obs_agent2)
+
+            else:
+                a2 = opponent.perform_greedy_action(obs_agent2)
+                if USE_MORE_ACTIONS:
+                    a2 = MORE_ACTIONS[a2]
+                else:
+                    a2 = env.discrete_to_continous_action(a2)
+
+            full_action = np.hstack([a1_cont, a2])
 
             start_time = time.time()  # Debbuging
 
