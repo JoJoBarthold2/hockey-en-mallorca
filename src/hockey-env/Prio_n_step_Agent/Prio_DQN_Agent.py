@@ -14,7 +14,7 @@ import Prio_n_step_Agent.utils.prioritized_replay_buffer as mem
 from Prio_n_step_Agent.utils.actions import MORE_ACTIONS
 
 
-class Prio_DQN_Agent(Agent):
+class Prio_DQN_Agent(object):
     """Agent implementing Q-learning with NN function approximation."""
 
     def __init__(
@@ -148,7 +148,6 @@ class Prio_DQN_Agent(Agent):
         game_id = uuid.UUID(int=int.from_bytes(game_id))
         print(f"Game started (id: {game_id})")
 
-
     def perform_greedy_action(self, state, eps=None):
 
         if eps is None:
@@ -176,7 +175,6 @@ class Prio_DQN_Agent(Agent):
                 'Error: Epsilon decay mode must be "linear" or "exponential".'
             )
 
-   
     def train(self, iter_fit=32):
 
         losses = []
