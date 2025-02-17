@@ -6,7 +6,8 @@ import random
 import logging
 import numpy as np
 import uuid
-from comprl.client import Agent
+
+# from comprl.client import Agent
 
 from Prio_n_step_Agent.QFunction import QFunction
 import Prio_n_step_Agent.utils.n_step_replay_buffer as rb

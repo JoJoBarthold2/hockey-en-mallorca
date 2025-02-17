@@ -7,7 +7,8 @@ import logging
 import numpy as np
 
 import uuid
-from comprl.client import Agent
+
+# from comprl.client import Agent
 
 from Combined_Agent_Double.QFunction import QFunction
 import Combined_Agent_Double.utils.n_step_replay_buffer as rb
