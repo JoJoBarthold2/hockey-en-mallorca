@@ -144,6 +144,11 @@ class Prio_DQN_Agent(Agent):
             f"{stats[0]} against the opponent with score: {stats[1]}"
         )
 
+    def on_start_game(self, game_id) -> None:
+        game_id = uuid.UUID(int=int.from_bytes(game_id))
+        print(f"Game started (id: {game_id})")
+
+
     def perform_greedy_action(self, state, eps=None):
 
         if eps is None:
@@ -171,10 +176,7 @@ class Prio_DQN_Agent(Agent):
                 'Error: Epsilon decay mode must be "linear" or "exponential".'
             )
 
-    def on_start_game(self, game_id) -> None:
-        game_id = uuid.UUID(int=int.from_bytes(game_id))
-        print(f"Game started (id: {game_id})")
-
+   
     def train(self, iter_fit=32):
 
         losses = []

@@ -6,15 +6,19 @@ import random
 import logging
 import numpy as np
 
+import uuid
+from comprl.client import Agent
+
 from Combined_Agent_Double.QFunction import QFunction
 import Combined_Agent_Double.utils.n_step_replay_buffer as rb
 import Combined_Agent_Double.utils.prioritized_replay_buffer as mem
+from Prio_n_step_Agent.utils.actions import MORE_ACTIONS
 
-class Dueling_DDQN_Agent(object):
+class Dueling_DDQN_Agent(Agent):
 
     """ Agent implementing Q-learning with NN function approximation. """
 
-    def __init__(self, state_space, action_space, alpha = 0.2, beta = 0.6, max_size = 100000, n_steps = 1, **userconfig):
+    def __init__(self, state_space, action_space, alpha = 0.2, beta = 0.6, max_size = 100000, n_steps = 1, use_more_actions = True, env= None, **userconfig):
         
         self._state_space = state_space
         self._action_space = action_space
@@ -55,6 +59,8 @@ class Dueling_DDQN_Agent(object):
         
         self.n_steps = n_steps
         self.use_n_step = n_steps > 1
+        self.env = env
+        self.use_more_actions = use_more_actions
 
         self.buffer = mem.PrioritizedReplayBuffer(
             max_size = max_size,
@@ -98,6 +104,33 @@ class Dueling_DDQN_Agent(object):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         logging.info(f"Using device: {device}")
 
+    def get_step(self, state):
+        state = np.array(state)
+
+        #
+
+        action = self.Q.greedyAction(state).tolist()
+        if self.use_more_actions:
+            continous_action = MORE_ACTIONS[action]
+        else:
+            continous_action = self.env.discrete_to_continous_action(action)
+        action_list = list(map(float, continous_action))
+
+        return action_list
+
+
+    
+    def on_end_game(self, result: bool, stats: list[float]) -> None:
+        text_result = "won" if result else "lost"
+        print(
+            f"Game ended: {text_result} with my score: "
+            f"{stats[0]} against the opponent with score: {stats[1]}"
+        )
+
+
+    def on_start_game(self, game_id) -> None:
+        game_id = uuid.UUID(int=int.from_bytes(game_id))
+        print(f"Game started (id: {game_id})")
 
     def _update_target_net(self):        
         self.Q_target.load_state_dict(self.Q.state_dict())

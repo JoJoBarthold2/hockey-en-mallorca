@@ -11,7 +11,9 @@ from gymnasium import spaces
 from Prio_n_step_Agent.Prio_DQN_Agent import Prio_DQN_Agent
 from Prio_n_step_Agent.utils.random_agent import RandomAgent
 from Prio_n_step_Agent.utils.actions import MORE_ACTIONS
-import Prio_n_step_Agent.utils.stats_functions as sf
+
+from Combined_Agent_Double.Dueling_DDQN_Agent import Dueling_DDQN_Agent as Combined_Agent
+
 
 SEED_TRAIN_1 = 7489
 SEED_TRAIN_2 = 1312
@@ -78,13 +80,17 @@ def initialize_agent(agent_args: list[str]) -> Agent:
     parser.add_argument(
         "--agent",
         type=str,
-        choices=["weak", "strong", "random", "Prio_DQN"],
+        choices=["weak", "strong", "random", "Prio_DQN", "Combined_DQN"],
         default="weak",
         help="Which agent to use.",
     )
+    parser.add_argument("--episode" , type=int, default= -1, help="Episode number to load the weights from")
     args = parser.parse_args(agent_args)
 
     # Initialize the agent based on the arguments.
+    episode = args.episode
+    episode = "training_finished" if episode == -1 else  "episode_" + str(episode)
+    print(f"Episode: {episode}")
     agent: Agent
     if args.agent == "weak":
         agent = HockeyAgent(weak=True)
@@ -112,8 +118,35 @@ def initialize_agent(agent_args: list[str]) -> Agent:
             learning_rate=0.0001,
             hidden_sizes=[256, 256],
             n_steps=5,
+            use_more_actions=USE_MORE_ACTIONS,
+            env=env,
         )
-        agent.Q.load(env_name, name="episode_5000")
+        agent.Q.load(env_name, name=episode)
+
+    elif args.agent == "Combined_DQN":
+        env_name = "../weights/combined_training_6_2_25"
+        env = h_env.HockeyEnv()
+        h_env.HockeyEnv().seed(seed)
+
+        state_space = env.observation_space
+
+        if USE_MORE_ACTIONS:
+            action_space = spaces.Discrete(len(MORE_ACTIONS))
+        else:
+            action_space = env.discrete_action_space
+
+        agent = Combined_Agent(
+            state_space,
+            action_space,
+            seed=seed,
+            eps=0.01,
+            learning_rate=0.0001,
+            hidden_sizes=[256, 256],
+            n_steps=5,
+            use_more_actions=USE_MORE_ACTIONS,
+            env=env,
+        )
+        agent.Q.load(env_name, name=episode)
     else:
         raise ValueError(f"Unknown agent: {args.agent}")
 
