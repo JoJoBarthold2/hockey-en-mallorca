@@ -43,7 +43,7 @@ agent = Prio_DQN_Agent(
     hidden_sizes=[256, 256],
     n_steps=4,
 )
-# agent.Q.load("more_actions_test_1_150k_30k_(256_256)")
+
 
 opponent0 = RandomAgent(seed=seed)
 opponent1 = h_env.BasicOpponent()

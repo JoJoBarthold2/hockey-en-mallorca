@@ -8,7 +8,8 @@ import numpy as np
 
 import uuid
 
-# from comprl.client import Agent
+from comprl.client import Agent
+
 
 from Combined_Agent_Double.QFunction import QFunction
 import Combined_Agent_Double.utils.n_step_replay_buffer as rb
@@ -16,7 +17,7 @@ import Combined_Agent_Double.utils.prioritized_replay_buffer as mem
 from Prio_n_step_Agent.utils.actions import MORE_ACTIONS
 
 
-class Dueling_DDQN_Agent(object):
+class Dueling_DDQN_Agent(Agent):
     """Agent implementing Q-learning with NN function approximation."""
 
     def __init__(

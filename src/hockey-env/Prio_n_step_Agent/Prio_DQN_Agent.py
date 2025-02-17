@@ -7,7 +7,7 @@ import logging
 import numpy as np
 import uuid
 
-# from comprl.client import Agent
+from comprl.client import Agent
 
 from Prio_n_step_Agent.QFunction import QFunction
 import Prio_n_step_Agent.utils.n_step_replay_buffer as rb
@@ -15,7 +15,7 @@ import Prio_n_step_Agent.utils.prioritized_replay_buffer as mem
 from Prio_n_step_Agent.utils.actions import MORE_ACTIONS
 
 
-class Prio_DQN_Agent(object):
+class Prio_DQN_Agent(Agent):
     """Agent implementing Q-learning with NN function approximation."""
 
     def __init__(
