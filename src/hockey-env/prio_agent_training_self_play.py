@@ -147,7 +147,7 @@ time_start = time.time()  # Debugging
 for episode in range(max_episodes):
     saved_weights = []
 
-    if len(saved_weights) > 0:
+    if saved_weights != []:
         selected = random.randint(0, len(opponents) - 1)
 
     else:
@@ -245,9 +245,14 @@ for episode in range(max_episodes):
         sf.plot_losses(losses, env_name)
         sf.plot_beta_evolution(env_name, betas)
         sf.plot_epsilon_evolution(env_name, epsilons)
-        sf.plot_match_evolution_by_chunks(
-            env_name, match_history, opponents_names, games_to_play
-        )
+        if saved_weights != []:
+            sf.plot_match_evolution_by_chunks(
+                env_name, match_history, opponents_names, games_to_play
+            )
+        else:
+            sf.plot_match_evolution_by_chunks(
+                env_name, match_history, opponents_names[:-1], games_to_play
+            )
 
     logging.debug(f" time per frame: {(time.time()-time_start)/frame_idx}")
     logging.debug(f" mean sample time: {np.mean(agent.sample_times)}")
