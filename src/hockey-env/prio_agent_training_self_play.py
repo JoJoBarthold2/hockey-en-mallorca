@@ -52,6 +52,7 @@ agent_copy = copy.deepcopy(agent)
 opponent0 = RandomAgent(seed=seed)
 opponent1 = h_env.BasicOpponent()
 opponent2 = h_env.BasicOpponent(weak=False)
+
 opponent3 = Prio_DQN_Agent(
     state_space,
     action_space,
@@ -63,7 +64,6 @@ opponent3 = Prio_DQN_Agent(
     env=env,
     use_more_actions=USE_MORE_ACTIONS,
 )
-
 opponent3.Q.load("pure_prio_training_2_2_25", name="episode_5000")
 
 opponent4 = Prio_DQN_Agent(
@@ -77,8 +77,8 @@ opponent4 = Prio_DQN_Agent(
     env=env,
     use_more_actions=USE_MORE_ACTIONS,
 )
-
 opponent4.Q.load("pure_prio_training_2_2_25", name="episode_7500")
+
 opponent5 = Combined_Agent(
     state_space,
     action_space,
@@ -91,6 +91,7 @@ opponent5 = Combined_Agent(
     use_more_actions=USE_MORE_ACTIONS,
 )
 opponent5.Q.load("combined_training_6_2_25", name="episode_5000")
+
 opponent6 = Combined_Agent(
     state_space,
     action_space,
@@ -109,6 +110,7 @@ opponents = [
     opponent1,
     opponent2,
     opponent3,
+    opponent4,
     opponent5,
     opponent6,
     agent_copy,
@@ -144,21 +146,21 @@ beta_frames = max_episodes * 1000  # Increase this to make annealing slower
 
 time_start = time.time()  # Debugging
 
+saved_weights = []
+
 for episode in range(max_episodes):
-    saved_weights = []
 
     if saved_weights != []:
         selected = random.randint(0, len(opponents) - 1)
-
     else:
         selected = random.randint(0, len(opponents) - 2)
-        print(opponents_names[selected])
 
+    print(opponents_names[selected])
     opponent = opponents[selected]
 
     if opponents_names[selected] == "self_play":
         weights = random.choice(saved_weights)
-        opponent.Q.load(env_name, name=weights)
+        opponent.Q.load(env_name, name = weights)
     for game in range(games_to_play):
 
         state, _ = env.reset(seed=seed)
@@ -245,15 +247,8 @@ for episode in range(max_episodes):
         sf.plot_losses(losses, env_name)
         sf.plot_beta_evolution(env_name, betas)
         sf.plot_epsilon_evolution(env_name, epsilons)
-        if saved_weights != []:
-            sf.plot_match_evolution_by_chunks(
-                env_name, match_history, opponents_names, games_to_play
-            )
-        else:
-            sf.plot_match_evolution_by_chunks(
-                env_name, match_history, opponents_names[:-1], games_to_play
-            )
-
+        sf.plot_match_evolution_by_chunks(env_name, match_history, opponents_names, games_to_play)
+            
     logging.debug(f" time per frame: {(time.time()-time_start)/frame_idx}")
     logging.debug(f" mean sample time: {np.mean(agent.sample_times)}")
 
@@ -266,6 +261,4 @@ sf.plot_returns(stats, env_name)
 sf.plot_losses(losses, env_name)
 sf.plot_beta_evolution(env_name, betas)
 sf.plot_epsilon_evolution(env_name, epsilons)
-sf.plot_match_evolution_by_chunks(
-    env_name, match_history, opponents_names, games_to_play
-)
+sf.plot_match_evolution_by_chunks(env_name, match_history, opponents_names, games_to_play)
