@@ -37,7 +37,7 @@ agent = Prio_DQN_Agent(
         eps=0.01,
         learning_rate=0.0001,
         hidden_sizes=[256, 256],
-        n_steps=4,
+        n_steps=6,
     )
   
 env_name = "prio_agent_self_play_19_2_25"
