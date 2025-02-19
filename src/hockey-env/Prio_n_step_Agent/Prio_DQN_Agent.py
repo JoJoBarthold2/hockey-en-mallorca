@@ -122,7 +122,8 @@ class Prio_DQN_Agent(Agent):
         self.Q_target.load_state_dict(self.Q.state_dict())
 
     def act(self, state):  # Fuction to be consistent with naming for self-play
-        self.perform_greedy_action(state, eps=0)
+        return self.perform_greedy_action(state, eps=0)
+    
 
     def get_step(self, state):
         state = np.array(state)
