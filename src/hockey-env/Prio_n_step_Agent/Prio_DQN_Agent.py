@@ -146,7 +146,7 @@ class Prio_DQN_Agent(Agent):
         )
 
     def on_start_game(self, game_id) -> None:
-        game_id = uuid.UUID(int=int.from_bytes(game_id))
+        game_id = uuid.UUID(int = int.from_bytes(game_id, byteorder = "little"))
         print(f"Game started (id: {game_id})")
 
     def perform_greedy_action(self, state, eps=None):
