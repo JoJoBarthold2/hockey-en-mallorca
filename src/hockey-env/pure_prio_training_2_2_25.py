@@ -64,7 +64,7 @@ frame_idx = 0
 
 max_episodes = 50000
 games_to_play = 50
-max_steps = 30000
+max_steps = 500
 
 train_iterations = 32  # Number of training steps per episode
 
@@ -134,6 +134,7 @@ for episode in range(max_episodes):
             obs_agent2 = env.obs_agent_two()
 
             if done or truncated:
+                logging.info(f"Game ended after {t+1} steps")
                 break
 
         loss = agent.train(train_iterations)
