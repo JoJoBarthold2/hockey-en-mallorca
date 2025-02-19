@@ -106,7 +106,7 @@ def initialize_agent(agent_args: list[str]) -> Agent:
     elif args.agent == "random":
         agent = RandomAgent()
     elif args.agent == "Prio_DQN":
-        env_name = "../weights/pure_prio_training_2_2_25"
+        env_name = "../weights/prio_agent_self_play_17_2_25"
         env = h_env.HockeyEnv()
         h_env.HockeyEnv().seed(seed)
 
