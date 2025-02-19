@@ -42,4 +42,4 @@ agent = Prio_DQN_Agent(
   
 env_name = "prio_agent_self_play_19_2_25"
 
-train_agent_self_play(agent = None, use_more_actions = USE_MORE_ACTIONS, seed = SEED_TRAIN_1, env=env, env_name = env_name)
+train_agent_self_play(agent = agent, use_more_actions = USE_MORE_ACTIONS, seed = SEED_TRAIN_1, env=env, env_name = env_name)
