@@ -49,7 +49,7 @@ train_agent_self_play(
     seed=SEED_TRAIN_1,
     env=env,
     env_name=env_name,
-    max_episodes=10,
+    max_episodes=20,
     games_to_play=2,
     max_steps=10,
 )
