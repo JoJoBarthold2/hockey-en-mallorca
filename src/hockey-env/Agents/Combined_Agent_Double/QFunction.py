@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import os
 
-from Combined_Agent_Double.utils.Dueling_DQN_feedforward import Feedforward
+from Agents.Combined_Agent_Double.utils.Dueling_DQN_feedforward import Feedforward
 
 class QFunction(Feedforward):
     
@@ -15,7 +15,7 @@ class QFunction(Feedforward):
         self.optimizer=torch.optim.Adam(self.parameters(), 
                                         lr=learning_rate, 
                                         eps=0.000001)
-        self.loss = torch.nn.SmoothL1Loss(reduction = "none") # MSELoss()
+        self.loss = torch.nn.SmoothL1Loss(reduction = "none")
 
     def fit(self, states, actions, targets, weights, n_step_obs = None, n_step_act = None, n_step_targets = None,):
 

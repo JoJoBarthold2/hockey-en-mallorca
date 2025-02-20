@@ -3,10 +3,9 @@ import torch
 import random
 import numpy as np
 from comprl.client import Agent
-import Pablos_Agent.utils.memory as mem
-from Pablos_Agent.QFunction import QFunction
-from Pablos_Agent.utils.actions import MORE_ACTIONS
-
+import Agents.utils.memory as mem
+from Agents.utils.actions import MORE_ACTIONS
+from Agents.Pablo.QFunction import QFunction
 
 class Dueling_DDQN_Agent(Agent):
 
