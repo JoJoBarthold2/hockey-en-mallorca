@@ -9,7 +9,7 @@ fi
 # Set variables
 SOURCE_PATH="$1"
 
-REPO_DIR="hockey_en_mallorca/src/weights/"  # Change this to your actual repo path
+REPO_DIR="hockey-en-mallorca/src/weights/"  # Change this to your actual repo path
 BASENAME=$(basename "$SOURCE_PATH")
 
 
@@ -17,7 +17,7 @@ cd ..
 
 # Copy the file/directory to the repository
 cp -r "$SOURCE_PATH" "$REPO_DIR"
-
+echo $PWD
 # Navigate to the repository
 cd "$REPO_DIR" || { echo "Repository directory not found!"; exit 1; }
 
