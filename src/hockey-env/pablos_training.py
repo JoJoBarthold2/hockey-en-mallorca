@@ -123,7 +123,7 @@ for episode in range(max_episodes):
                 a1_cont = env.discrete_to_continous_action(a1)
 
             if opponents_names[selected] not in ["Random", "Weak", "NonWeak"]:
-                a2 = opponent.act(obs_agent2, eps = 0)
+                a2 = opponent.act(obs_agent2, eps = 0, validation = True)
                 if USE_MORE_ACTIONS:
                     a2 = MORE_ACTIONS[a2]
                 else:
