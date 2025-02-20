@@ -36,6 +36,7 @@ class Dueling_DDQN_Agent(Agent):
             "hidden_sizes": [128, 128],
             "use_dueling": True,
             "use_double": True,
+            "use_noisy": True,
             "use_more_actions": True
         }
 
@@ -63,7 +64,8 @@ class Dueling_DDQN_Agent(Agent):
             action_dim = self._action_n,
             learning_rate = self._config["learning_rate"],
             hidden_sizes = self._config["hidden_sizes"],
-            use_dueling = self._config["use_dueling"]
+            use_dueling = self._config["use_dueling"],
+            use_noisy = self._config["use_noisy"]
         )
 
         # Q Target
@@ -72,7 +74,8 @@ class Dueling_DDQN_Agent(Agent):
             action_dim = self._action_n,
             learning_rate = 0,  # We do not want to train the Target Function, only copy the weights of the Q Network
             hidden_sizes = self._config["hidden_sizes"],
-            use_dueling = self._config["use_dueling"]
+            use_dueling = self._config["use_dueling"],
+            use_noisy = self._config["use_noisy"]
         )
         self._update_target_net()
 
@@ -101,17 +104,20 @@ class Dueling_DDQN_Agent(Agent):
     def _update_target_net(self):
         self.Q_target.load_state_dict(self.Q.state_dict())
 
-    def act(self, state, eps = None):
-
-        if eps is None:
-            eps = self._eps
-
-        if np.random.random() > eps:
-            action = self.Q.greedyAction(state)
+    def act(self, state, eps = None, validation = False):
+        
+        if self._config["use_noisy"]:
+            if validation:
+                return self.Q.act(state)
+            else:
+                return self.Q.greedyAction(state)
         else:
-            action = self._action_space.sample()
-
-        return action
+            if eps is None:
+                eps = self._eps
+            if np.random.random() > eps:
+                return self.Q.greedyAction(state)
+            else:
+                return self._action_space.sample()
 
     def _perform_epsilon_decay(self):
 
@@ -130,6 +136,9 @@ class Dueling_DDQN_Agent(Agent):
         for i in range(iter_fit):
 
             if self.buffer.size > self._config["batch_size"]:
+
+                if self._config["use_noisy"]:
+                    self.Q.reset_noise()
 
                 # Sample from the replay buffer
                 data = self.buffer.sample(batch=self._config["batch_size"])

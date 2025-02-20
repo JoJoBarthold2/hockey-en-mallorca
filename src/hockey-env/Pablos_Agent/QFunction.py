@@ -6,14 +6,15 @@ from Pablos_Agent.utils.feedforward import Feedforward
 
 class QFunction(Feedforward):
     
-    def __init__(self, state_dim, action_dim, use_dueling, hidden_sizes = [128,128], learning_rate = 0.0002):
+    def __init__(self, state_dim, action_dim, use_dueling, hidden_sizes = [128,128], learning_rate = 0.0002, use_noisy = False):
 
-        super().__init__(input_size = state_dim, hidden_sizes = hidden_sizes, output_size = action_dim, use_dueling = use_dueling)
+        super().__init__(input_size = state_dim, hidden_sizes = hidden_sizes, output_size = action_dim, use_dueling = use_dueling, use_noisy = use_noisy)
 
         self.optimizer=torch.optim.Adam(self.parameters(), 
                                         lr=learning_rate, 
                                         eps=0.000001)
         self.loss = torch.nn.SmoothL1Loss()
+        self.use_noisy = use_noisy
 
     def fit(self, states, actions, targets):
 
@@ -36,11 +37,20 @@ class QFunction(Feedforward):
         return self.forward(states).gather(1, actions[:,None])
     
     def maxQ(self, states):
-        return np.max(self.predict(states), axis=-1, keepdims=True)
-        
-    def greedyAction(self, states):
-        return np.argmax(self.predict(states), axis=-1)
-    
+        return np.max(self.predict(states), axis = -1, keepdims = True)
+
+    def greedyAction(self, state):
+        with torch.no_grad():
+            action = np.argmax(self.forward(torch.tensor(state, dtype=torch.float32)).cpu().numpy(), axis=-1)
+        return action
+
+    def act(self, state):
+        self.eval()
+        with torch.no_grad():
+            action = np.argmax(self.forward(torch.tensor(state, dtype = torch.float32)).cpu().numpy(), axis = -1)
+        self.train()
+        return action
+
     def save(self, env_name, name):
             os.makedirs(f"{env_name}/weights", exist_ok=True)
             torch.save(self.state_dict(), f"{env_name}/weights/{name}.pth")

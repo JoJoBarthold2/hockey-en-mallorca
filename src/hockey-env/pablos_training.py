@@ -16,12 +16,14 @@ parser = argparse.ArgumentParser(description = "Train Dueling DDQN Agent.")
 parser.add_argument("--use_dueling", type = str, default = "False", help = "Use Dueling Network")
 parser.add_argument("--use_double", type = str, default = "False", help = "Use Double DQN")
 parser.add_argument("--use_eps_decay", type = str, default = "False", help = "Use Epsilon Decay")
+parser.add_argument("--use_noisy_net", type = str, default = "False", help = "Use Noisy Net")
 parser.add_argument("--env_description", type = str, default = "", help = "Additional description for env_name")
 args = parser.parse_args()
 
 use_dueling = True if args.use_dueling == "True" else False
 use_double = True if args.use_double == "True" else False
 use_eps_decay = True if args.use_eps_decay == "True" else False
+use_noisy = True if args.use_noisy_net == "True" else False
 
 SEED_TRAIN_1 = 7489
 SEED_TRAIN_2 = 1312
@@ -60,6 +62,7 @@ agent = Dueling_DDQN_Agent(
     use_eps_decay = use_eps_decay,
     use_dueling = use_dueling,
     use_double = use_double,
+    use_noisy = use_noisy,
     hidden_sizes = [256, 256]
 )
 
