@@ -112,7 +112,7 @@ class Prio_DQN_Agent(Agent):
             hidden_sizes=self._config["hidden_sizes"],
             value_hidden_sizes=self._config["value_hidden_sizes"],
             advantage_hidden_sizes=self._config["advantage_hidden_sizes"],
-        )  # We do not want to train the Target Function, only copy the weights of the Q Network
+        )
         self._update_target_net()
 
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -123,7 +123,6 @@ class Prio_DQN_Agent(Agent):
 
     def act(self, state):  # Fuction to be consistent with naming for self-play
         return self.perform_greedy_action(state, eps=0)
-    
 
     def get_step(self, state):
         state = np.array(state)
@@ -147,7 +146,7 @@ class Prio_DQN_Agent(Agent):
         )
 
     def on_start_game(self, game_id) -> None:
-        game_id = uuid.UUID(int = int.from_bytes(game_id, byteorder = "little"))
+        game_id = uuid.UUID(int=int.from_bytes(game_id, byteorder="little"))
         print(f"Game started (id: {game_id})")
 
     def perform_greedy_action(self, state, eps=None):

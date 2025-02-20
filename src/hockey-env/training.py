@@ -14,20 +14,27 @@ from Combined_Agent_Double.Dueling_DDQN_Agent import (
     Dueling_DDQN_Agent as Combined_Agent,
 )
 import hockey.hockey_env as h_env
+import psutil
+import torch
+
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-
-
-
-def train_agent_self_play(agent = None, use_more_actions = True, seed = 7489, env=None, env_name = "hockey_training"):
+def train_agent_self_play(
+    agent=None,
+    use_more_actions=True,
+    seed=7489,
+    env=None,
+    env_name="hockey_training",
+    max_episodes=10000,
+    games_to_play=50,
+    max_steps=300,
+):
     random.seed(seed)
 
     reload(h_env)
-    
 
     env = h_env.HockeyEnv()
-    logging.basicConfig(level=logging.INFO)
-
 
     state_space = env.observation_space
 
@@ -36,7 +43,6 @@ def train_agent_self_play(agent = None, use_more_actions = True, seed = 7489, en
     else:
         action_space = env.discrete_action_space
 
-    
     agent_copy = copy.deepcopy(agent)
 
     opponent0 = RandomAgent(seed=seed)
@@ -125,10 +131,6 @@ def train_agent_self_play(agent = None, use_more_actions = True, seed = 7489, en
 
     frame_idx = 0
 
-    max_episodes = 10000
-    games_to_play = 50
-    max_steps = 300
-
     train_iterations = 32  # Number of training steps per episode
 
     beta_start = agent.beta  # Beta annealing parameters
@@ -139,6 +141,7 @@ def train_agent_self_play(agent = None, use_more_actions = True, seed = 7489, en
     saved_weights = []
 
     for episode in range(max_episodes):
+        logging.info("Memory usage: " + str(psutil.virtual_memory().percent))
 
         if saved_weights != []:
             selected = random.randint(0, len(opponents) - 1)
@@ -150,7 +153,7 @@ def train_agent_self_play(agent = None, use_more_actions = True, seed = 7489, en
 
         if opponents_names[selected] == "self_play":
             weights = random.choice(saved_weights)
-            opponent.Q.load(env_name, name = weights)
+            opponent.Q.load(env_name, name=weights)
         for game in range(games_to_play):
 
             state, _ = env.reset(seed=seed)
@@ -238,8 +241,10 @@ def train_agent_self_play(agent = None, use_more_actions = True, seed = 7489, en
             sf.plot_losses(losses, env_name)
             sf.plot_beta_evolution(env_name, betas)
             sf.plot_epsilon_evolution(env_name, epsilons)
-            sf.plot_match_evolution_by_chunks(env_name, match_history, opponents_names, games_to_play)
-                
+            sf.plot_match_evolution_by_chunks(
+                env_name, match_history, opponents_names, games_to_play
+            )
+
         logging.debug(f" time per frame: {(time.time()-time_start)/frame_idx}")
         logging.debug(f" mean sample time: {np.mean(agent.sample_times)}")
 
@@ -252,4 +257,6 @@ def train_agent_self_play(agent = None, use_more_actions = True, seed = 7489, en
     sf.plot_losses(losses, env_name)
     sf.plot_beta_evolution(env_name, betas)
     sf.plot_epsilon_evolution(env_name, epsilons)
-    sf.plot_match_evolution_by_chunks(env_name, match_history, opponents_names, games_to_play)
+    sf.plot_match_evolution_by_chunks(
+        env_name, match_history, opponents_names, games_to_play
+    )
