@@ -50,6 +50,6 @@ train_agent_self_play(
     env=env,
     env_name=env_name,
     max_episodes=10,
-    games_to_play=1,
+    games_to_play=2,
     max_steps=10,
 )
