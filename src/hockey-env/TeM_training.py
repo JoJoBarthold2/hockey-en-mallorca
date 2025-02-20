@@ -91,7 +91,7 @@ opponent3 = Prio_DQN_Agent(
         env = env,
         use_more_actions = USE_MORE_ACTIONS,
 )
-opponent3.Q.load("../weights/pure_prio_training_2_2_25", name = "episode_5000")
+opponent3.Q.load("pure_prio_training_2_2_25", name = "episode_5000")
 
 opponent4 = Prio_DQN_Agent(
     state_space,
@@ -104,7 +104,7 @@ opponent4 = Prio_DQN_Agent(
     env = env,
     use_more_actions = USE_MORE_ACTIONS,
 )
-opponent4.Q.load("../weights/pure_prio_training_2_2_25", name = "episode_7500")
+opponent4.Q.load("pure_prio_training_2_2_25", name = "episode_7500")
 
 opponent5 = Previous_Combined_Agent(
     state_space,
@@ -117,7 +117,7 @@ opponent5 = Previous_Combined_Agent(
     env = env,
     use_more_actions = USE_MORE_ACTIONS,
 )
-opponent5.Q.load("../weights/combined_training_6_2_25", name = "episode_5000")
+opponent5.Q.load("combined_training_6_2_25", name = "episode_5000")
 
 opponent6 = Previous_Combined_Agent(
     state_space,
@@ -130,7 +130,7 @@ opponent6 = Previous_Combined_Agent(
     env = env,
     use_more_actions = USE_MORE_ACTIONS,
 )
-opponent6.Q.load("../weights/combined_training_6_2_25", name = "episode_7500")
+opponent6.Q.load("combined_training_6_2_25", name = "episode_7500")
 
 agent_copy = copy.deepcopy(agent)
 
@@ -164,8 +164,8 @@ saved_weights = []
 
 frame_idx = 0
 
-max_episodes = 20
-games_to_play = 2
+max_episodes = 10000
+games_to_play = 50
 
 train_iterations = 32
 
@@ -262,6 +262,8 @@ for episode in range(max_episodes):
         sf.plot_returns(stats, env_name)
         sf.plot_losses(losses, env_name)
         sf.plot_epsilon_evolution(env_name, epsilons)
+
+    if (episode % 20 == 0) and episode > 0:  
         sf.plot_match_evolution_by_chunks(env_name, match_history, opponents_names, games_to_play)
 
     logging.debug(f" time per frame: {(time.time()-time_start)/frame_idx}")
