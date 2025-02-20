@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import argparse
 from gymnasium import spaces
 import hockey.hockey_env as h_env
-from __future__ import annotations
 from Agents.utils.actions import MORE_ACTIONS
 from comprl.client import Agent, launch_client
 from Agents.Random.random_agent import RandomAgent
