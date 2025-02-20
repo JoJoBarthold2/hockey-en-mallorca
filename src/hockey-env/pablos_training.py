@@ -119,13 +119,14 @@ for episode in range(max_episodes):
             else: 
                 a1_cont = env.discrete_to_continous_action(a1)
 
-            a2 = opponent.act(obs_agent2)
             if opponents_names[selected] not in ["Random", "Weak", "NonWeak"]:
-                a2 = opponent.act(obs_agent2)
+                a2 = opponent.act(obs_agent2, eps = 0)
                 if USE_MORE_ACTIONS:
                     a2 = MORE_ACTIONS[a2]
                 else:
                     a2 = env.discrete_to_continous_action(a2)
+            else:
+                a2 = opponent.act(obs_agent2)
 
             full_action = np.hstack([a1_cont, a2])
 
