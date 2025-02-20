@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from Pablos_Agent.utils.noisy_linear import NoisyLinear
+from Agents.utils.noisy_linear import NoisyLinear
 
 class Feedforward(torch.nn.Module):
 

@@ -6,11 +6,11 @@ import random
 import time
 import copy
 import os
-from Prio_n_step_Agent.utils.actions import MORE_ACTIONS
-from Prio_n_step_Agent.Prio_DQN_Agent import Prio_DQN_Agent
-from Prio_n_step_Agent.utils.random_agent import RandomAgent
-import Prio_n_step_Agent.utils.stats_functions as sf
-from Combined_Agent_Double.Dueling_DDQN_Agent import (
+from Agents.utils.actions import MORE_ACTIONS
+from Agents.Prio_n_step.Prio_DQN_Agent import Prio_DQN_Agent
+from Agents.Random.random_agent import RandomAgent
+import Agents.utils.stats_functions as sf
+from Agents.Combined_Agent_Double.Dueling_DDQN_Agent import (
     Dueling_DDQN_Agent as Combined_Agent,
 )
 import hockey.hockey_env as h_env

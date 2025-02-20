@@ -9,21 +9,25 @@ from gymnasium import spaces
 import hockey.hockey_env as h_env
 import Agents.utils.stats_functions as sf
 from Agents.utils.actions import MORE_ACTIONS
-from Agents.Pablo.Agent import Dueling_DDQN_Agent
 from Agents.Random.random_agent import RandomAgent
-
+from Agents.Tapas_en_Mallorca.Agent import Combined_Agent
+from Agents.Prio_n_step.Prio_DQN_Agent import Prio_DQN_Agent
+from Agents.Combined_Agent_Double.Dueling_DDQN_Agent import Dueling_DDQN_Agent as Previous_Combined_Agent
 
 parser = argparse.ArgumentParser(description = "Train Dueling DDQN Agent.")
-parser.add_argument("--use_dueling", type = str, default = "False", help = "Use Dueling Network")
-parser.add_argument("--use_double", type = str, default = "False", help = "Use Double DQN")
+parser.add_argument("--use_dueling", type = str, default = "True", help = "Use Dueling Network")
+parser.add_argument("--use_double", type = str, default = "True", help = "Use Double DQN")
 parser.add_argument("--use_eps_decay", type = str, default = "False", help = "Use Epsilon Decay")
-parser.add_argument("--use_noisy_net", type = str, default = "False", help = "Use Noisy Net")
+parser.add_argument("--use_noisy_net", type = str, default = "True", help = "Use Noisy Net")
+parser.add_argument("--use_prio", type = str, default = "True", help = "Use Prioritized Buffuring Replay")
+parser.add_argument("--n_step", type = int, default = 5, help = "Number of steps to look ahead")
 parser.add_argument("--env_description", type = str, default = "", help = "Additional description for env_name")
 args = parser.parse_args()
 
 use_dueling = True if args.use_dueling == "True" else False
 use_double = True if args.use_double == "True" else False
 use_eps_decay = True if args.use_eps_decay == "True" else False
+use_prio = True if args.use_prio == "True" else False
 use_noisy = True if args.use_noisy_net == "True" else False
 
 SEED_TRAIN_1 = 7489
@@ -44,6 +48,9 @@ if use_dueling:
 if use_double:
     name_parts.append("Double")
 name_parts.append("DQN")
+if use_prio:
+    name_parts.append("Prio")
+name_parts.append(f"n_step_{args.n_step}")
 name = "_".join(name_parts)
 
 env_name = f"{name}_{args.env_description}"
@@ -56,24 +63,97 @@ if(USE_MORE_ACTIONS):
 else: 
     action_space = env.discrete_action_space
 
-agent = Dueling_DDQN_Agent(
+agent = Combined_Agent(
     state_space,
     action_space,
+    env = env,
     seed = seed,
     use_eps_decay = use_eps_decay,
     use_dueling = use_dueling,
     use_double = use_double,
     use_noisy = use_noisy,
+    use_prio = use_prio,
+    n_step = args.n_step,
     hidden_sizes = [256, 256]
 )
 
 opponent0 = RandomAgent(seed = seed)
 opponent1 = h_env.BasicOpponent()
 opponent2 = h_env.BasicOpponent(weak = False)
-opponent3 = copy.deepcopy(agent)
+opponent3 = Prio_DQN_Agent(
+        state_space,
+        action_space,
+        seed = seed,
+        eps = 0.01,
+        learning_rate = 0.0001,
+        hidden_sizes = [256, 256],
+        n_steps = 4,
+        env = env,
+        use_more_actions = USE_MORE_ACTIONS,
+)
+opponent3.Q.load("../weights/pure_prio_training_2_2_25", name = "episode_5000")
 
-opponents = [opponent0, opponent1, opponent2, opponent3]
-opponents_names = ["Random", "Weak", "NonWeak", "Self-play"]
+opponent4 = Prio_DQN_Agent(
+    state_space,
+    action_space,
+    seed = seed,
+    eps = 0.01,
+    learning_rate = 0.0001,
+    hidden_sizes = [256, 256],
+    n_steps = 4,
+    env = env,
+    use_more_actions = USE_MORE_ACTIONS,
+)
+opponent4.Q.load("../weights/pure_prio_training_2_2_25", name = "episode_7500")
+
+opponent5 = Previous_Combined_Agent(
+    state_space,
+    action_space,
+    seed = seed,
+    eps = 0.01,
+    learning_rate = 0.0001,
+    hidden_sizes = [256, 256],
+    n_steps = 4,
+    env = env,
+    use_more_actions = USE_MORE_ACTIONS,
+)
+opponent5.Q.load("../weights/combined_training_6_2_25", name = "episode_5000")
+
+opponent6 = Previous_Combined_Agent(
+    state_space,
+    action_space,
+    seed = seed,
+    eps = 0.01,
+    learning_rate = 0.0001,
+    hidden_sizes = [256, 256],
+    n_steps = 4,
+    env = env,
+    use_more_actions = USE_MORE_ACTIONS,
+)
+opponent6.Q.load("../weights/combined_training_6_2_25", name = "episode_7500")
+
+agent_copy = copy.deepcopy(agent)
+
+opponents = [
+    opponent0,
+    opponent1,
+    opponent2,
+    opponent3,
+    opponent4,
+    opponent5,
+    opponent6,
+    agent_copy,
+]
+opponents_names = [
+    "Random",
+    "Weak",
+    "NonWeak",
+    "Prio Agent_5000",
+    "Prio_Agent_7500",
+    "Combined Agent_5000",
+    "Combined Agent_7500",
+    "self_play",
+]
 
 match_history = [[] for _ in opponents]
 
@@ -84,8 +164,8 @@ saved_weights = []
 
 frame_idx = 0
 
-max_episodes = 3000
-games_to_play = 50
+max_episodes = 20
+games_to_play = 2
 
 train_iterations = 32
 
@@ -142,10 +222,16 @@ for episode in range(max_episodes):
 
             total_reward += reward
 
-            one_step_transition = (state, a1, reward, next_state, done)
-
-            if one_step_transition != ():
-                agent.buffer.add_transition(one_step_transition)        ## Store for vales
+            if agent.use_n_step:
+                one_step_transition = agent.n_buffer.add_transition(
+                    (state, a1, reward, next_state, done)
+                )
+                if one_step_transition != ():
+                    agent.buffer.store(one_step_transition)
+            else:
+                one_step_transition = (state, a1, reward, next_state, done)
+                if one_step_transition != ():
+                    agent.buffer.add_transition(one_step_transition)        ## Store for vales
 
             state = next_state
             obs_agent2 = env.obs_agent_two()
