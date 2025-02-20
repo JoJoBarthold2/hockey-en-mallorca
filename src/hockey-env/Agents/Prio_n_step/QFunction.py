@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import os
 
-from Prio_n_step_Agent.utils.feedforward import Feedforward
+from Agents.Prio_n_step.Feedforward import Feedforward
 
 
 class QFunction(Feedforward):
@@ -13,8 +13,6 @@ class QFunction(Feedforward):
         state_dim,
         action_dim,
         hidden_sizes=[128, 128],
-        value_hidden_sizes=None,
-        advantage_hidden_sizes=None,
         learning_rate=0.0002,
     ):
 
@@ -25,7 +23,7 @@ class QFunction(Feedforward):
         self.optimizer = torch.optim.Adam(
             self.parameters(), lr=learning_rate, eps=0.000001
         )
-        self.loss = torch.nn.SmoothL1Loss(reduction="none")  # MSELoss()
+        self.loss = torch.nn.SmoothL1Loss(reduction="none")
 
     def fit(
         self,

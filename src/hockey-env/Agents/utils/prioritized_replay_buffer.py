@@ -2,8 +2,7 @@ import numpy.random as random
 import numpy as np
 import logging
 
-from Prio_n_step_Agent.utils.segment_tree import SumSegmentTree, MinSegmentTree
-
+from Agents.utils.segment_tree import SumSegmentTree, MinSegmentTree
 
 class PrioritizedReplayBuffer:
     """Prioritized Replay buffer. Adapted to be similar to Memory from the lecture

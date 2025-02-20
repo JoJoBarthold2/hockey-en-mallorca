@@ -1,4 +1,3 @@
-import math
 import torch
 import torch.nn as nn
 
@@ -32,15 +31,6 @@ class NoisyLinear(nn.Module):
         
         self.sigma_weight.data.fill_(self.sigma)
         self.sigma_bias.data.fill_(self.sigma)
-
-
-    """def reset_parameters(self):
-
-        bound = 1 / math.sqrt(self.in_features)
-        self.mu_weight.data.uniform_(-bound, bound)
-        self.mu_bias.data.uniform_(-bound, bound)
-        self.sigma_weight.data.fill_(self.sigma)
-        self.sigma_bias.data.fill_(self.sigma)"""
 
     def reset_noise(self):
 

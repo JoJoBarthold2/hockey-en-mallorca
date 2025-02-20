@@ -1,23 +1,19 @@
-import os
-import time  # Only for debugging
+import time
 import torch
-import pickle
 import random
 import logging
 import numpy as np
-
 import uuid
 
 from comprl.client import Agent
 
+from Agents.Prio_n_step.QFunction import QFunction
+import Agents.utils.n_step_replay_buffer as rb
+import Agents.utils.prioritized_replay_buffer as mem
+from Agents.utils.actions import MORE_ACTIONS
 
-from Combined_Agent_Double.QFunction import QFunction
-import Combined_Agent_Double.utils.n_step_replay_buffer as rb
-import Combined_Agent_Double.utils.prioritized_replay_buffer as mem
-from Prio_n_step_Agent.utils.actions import MORE_ACTIONS
 
-
-class Dueling_DDQN_Agent(Agent):
+class Prio_DQN_Agent(Agent):
     """Agent implementing Q-learning with NN function approximation."""
 
     def __init__(
@@ -36,7 +32,8 @@ class Dueling_DDQN_Agent(Agent):
         self._state_space = state_space
         self._action_space = action_space
         self._action_n = action_space.n
-
+        self.use_more_actions = use_more_actions
+        self.env = env
         self.train_iter = 0
 
         self._config = {
@@ -53,8 +50,6 @@ class Dueling_DDQN_Agent(Agent):
             "eps_decay": 0.995,
             "seed": int(random.random()),
             "hidden_sizes": [128, 128],
-            "value_hidden_sizes": None,
-            "advantage_hidden_sizes": None,
             "prioritized_replay_eps": 1e-6,
         }
 
@@ -72,8 +67,6 @@ class Dueling_DDQN_Agent(Agent):
 
         self.n_steps = n_steps
         self.use_n_step = n_steps > 1
-        self.env = env
-        self.use_more_actions = use_more_actions
 
         self.buffer = mem.PrioritizedReplayBuffer(
             max_size=max_size,
@@ -103,8 +96,6 @@ class Dueling_DDQN_Agent(Agent):
             action_dim=self._action_n,
             learning_rate=self._config["learning_rate"],
             hidden_sizes=self._config["hidden_sizes"],
-            value_hidden_sizes=self._config["value_hidden_sizes"],
-            advantage_hidden_sizes=self._config["advantage_hidden_sizes"],
         )
 
         # Q Target
@@ -113,13 +104,18 @@ class Dueling_DDQN_Agent(Agent):
             action_dim=self._action_n,
             learning_rate=0,  # We do not want to train the Target Function, only copy the weights of the Q Network
             hidden_sizes=self._config["hidden_sizes"],
-            value_hidden_sizes=self._config["value_hidden_sizes"],
-            advantage_hidden_sizes=self._config["advantage_hidden_sizes"],
-        )  # We do not want to train the Target Function, only copy the weights of the Q Network
+        )
         self._update_target_net()
 
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         logging.info(f"Using device: {device}")
+
+    def _update_target_net(self):
+        self.Q_target.load_state_dict(self.Q.state_dict())
+
+
+    def act(self, state, eps = None, validation = False):  # Fuction to be consistent with naming for self-play
+        return self.perform_greedy_action(state, eps=0)
 
     def get_step(self, state):
         state = np.array(state)
@@ -143,14 +139,8 @@ class Dueling_DDQN_Agent(Agent):
         )
 
     def on_start_game(self, game_id) -> None:
-        game_id = uuid.UUID(int = int.from_bytes(game_id, byteorder = "little"))
+        game_id = uuid.UUID(int=int.from_bytes(game_id, byteorder="little"))
         print(f"Game started (id: {game_id})")
-
-    def _update_target_net(self):
-        self.Q_target.load_state_dict(self.Q.state_dict())
-
-    def act(self, state):  # Fuction to be consistent with naming for self-play
-        return self.perform_greedy_action(state, eps=0)
 
     def perform_greedy_action(self, state, eps=None):
 
@@ -207,22 +197,15 @@ class Dueling_DDQN_Agent(Agent):
                     :, None
                 ]  # Done flag (1 if terminal, else 0)
 
-                # Double DQN
-                a_prime = self.Q.greedyAction(
-                    s_prime
-                )  # Get best action using Q network
-                s_prime_tensor = torch.tensor(s_prime, dtype=torch.float32)
-                a_prime_tensor = torch.tensor(a_prime, dtype=torch.int64)
-                v_prime = self.Q_target.Q_value(
-                    s_prime_tensor, a_prime_tensor
-                )  # Evaluate it using Q_target
-
+                if self._config["use_target_net"]:
+                    v_prime = self.Q_target.maxQ(s_prime)
+                else:
+                    v_prime = self.Q.maxQ(s_prime)
                 # Target
 
-                td_target = (
-                    rew
-                    + self._config["discount"] * (1.0 - done) * v_prime.detach().numpy()
-                )
+                td_target = rew + self._config["discount"] * (1.0 - done) * v_prime
+
+       ################
 
                 # Optimize the lsq objective
 
@@ -241,22 +224,14 @@ class Dueling_DDQN_Agent(Agent):
                     n_rew = np.stack(n_step_data[:, 2])[:, None]
                     n_s_prime = np.stack(n_step_data[:, 3])
 
-                    # Double DQN
-                    n_a_prime = self.Q.greedyAction(
-                        n_s_prime
-                    )  # Get best action using Q network
-                    n_s_prime_tensor = torch.tensor(n_s_prime, dtype=torch.float32)
-                    n_a_prime_tensor = torch.tensor(n_a_prime, dtype=torch.int64)
-                    n_v_prime = self.Q_target.Q_value(
-                        n_s_prime_tensor, n_a_prime_tensor
-                    )  # Evaluate it using Q_target
+                    if self._config["use_target_net"]:
+                        n_v_prime = self.Q_target.maxQ(n_s_prime)
+                    else:
+                        n_v_prime = self.Q.maxQ(n_s_prime)  # Evaluate it using Q_target
 
                     n_done = np.stack(n_step_data[:, 4])[:, None]
                     n_td_target = (
-                        n_rew
-                        + self._config["discount"]
-                        * (1.0 - n_done)
-                        * n_v_prime.detach().numpy()
+                        n_rew + self._config["discount"] * (1.0 - n_done) * n_v_prime
                     )
 
                     fit_loss, elementwise_loss = self.Q.fit(
