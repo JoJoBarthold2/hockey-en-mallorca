@@ -157,6 +157,7 @@ opponents_names = [
 
 match_history = [[] for _ in opponents]
 
+betas = []
 stats = []
 losses = []
 epsilons = []
@@ -245,6 +246,7 @@ for episode in range(max_episodes):
         if game % int(games_to_play/2) == 0:    
             losses.extend(loss)
             stats.append([episode, total_reward, t + 1])
+            betas.append(agent.beta)
             epsilons.append(agent._eps)
             logging.info(f"Episode {episode+1}/{max_episodes}, Game {game+1}/{games_to_play} - Total Reward: {total_reward}")
         
@@ -257,6 +259,7 @@ for episode in range(max_episodes):
         agent.Q.save(env_name, name = f"episode_{episode}")
         saved_weights.append(f"episode_{episode}")
         sf.save_epsilons(env_name, epsilons)
+        sf.save_betas(env_name, betas)
         sf.save_stats(env_name, stats, losses)
         sf.save_match_history(env_name, match_history)
         sf.plot_returns(stats, env_name)
@@ -270,6 +273,7 @@ for episode in range(max_episodes):
 
 agent.Q.save(env_name, name = "training_finished")
 sf.save_epsilons(env_name, epsilons)
+sf.save_betas(env_name, betas)
 sf.save_stats(env_name, stats, losses)
 sf.save_match_history(env_name, match_history)
 sf.plot_returns(stats, env_name)
