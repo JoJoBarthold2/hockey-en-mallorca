@@ -3,6 +3,7 @@ import torch
 import random
 import logging
 import numpy as np
+import time
 from comprl.client import Agent
 import Agents.utils.memory as memory
 from Agents.utils.actions import MORE_ACTIONS
@@ -143,18 +144,22 @@ class Combined_Agent(Agent):
         self.Q_target.load_state_dict(self.Q.state_dict())
 
     def act(self, state, eps = None, validation = False):
-        
+        act_time = time.time()
         if self._config["use_noisy"]:
             if validation:
+                logging.debug("Acting took {:.2f} seconds.".format(time.time() - act_time))
                 return self.Q.act(state)
             else:
+                logging.debug("Acting took {:.2f} seconds.".format(time.time() - act_time))
                 return self.Q.greedyAction(state)
         else:
             if eps is None:
                 eps = self._eps
             if np.random.random() > eps:
+                logging.debug("Acting took {:.2f} seconds.".format(time.time() - act_time))
                 return self.Q.greedyAction(state)
             else:
+                logging.debug("Acting took {:.2f} seconds.".format(time.time() - act_time))
                 return self._action_space.sample()
 
     def _perform_epsilon_decay(self):
@@ -194,6 +199,8 @@ class Combined_Agent(Agent):
                 done = np.stack(data[:,4])[:,None]      # Done flag (1 if terminal, else 0)
 
                 if self._config["use_double"]:     # Double DQN
+
+                    double_time = time.time()
                     if self._config["use_target_net"]:
                         a_prime = self.Q.greedyAction(s_prime)      # Get best action using Q network
                         s_prime_tensor = torch.tensor(s_prime, dtype = torch.float32)
@@ -207,6 +214,7 @@ class Combined_Agent(Agent):
 
                     # Target
                     td_target = (rew + self._config["discount"] * (1.0 - done) * v_prime.detach().numpy())
+                    double_time_greedy = time.time() - double_time
 
                 else:       # Without Double DQN
                     if self._config["use_target_net"]:
@@ -234,6 +242,7 @@ class Combined_Agent(Agent):
                     n_done = np.stack(n_step_data[:, 4])[:, None]
 
                     if self._config["use_double"]:     # Double DQN
+                        double_time = time.time()
                         if self._config["use_target_net"]:
                             n_a_prime = self.Q.greedyAction(n_s_prime)      # Get best action using Q network
                             n_s_prime_tensor = torch.tensor(n_s_prime, dtype = torch.float32)
@@ -247,6 +256,8 @@ class Combined_Agent(Agent):
 
                         # Target
                         n_td_target = (n_rew + self._config["discount"] * (1.0 - n_done) * n_v_prime.detach().numpy())
+                        double_time_greedy = time.time() - double_time + double_time_greedy
+                        logging.debug(f"Double DQN took {double_time_greedy:.2f} seconds.")
 
                     else:       # Without Double DQN
                         if self._config["use_target_net"]:
@@ -280,14 +291,19 @@ class Combined_Agent(Agent):
                         )
 
                 elif self.use_prio:
-
+                    
+                    fit_time = time.time()
                     fit_loss, elementwise_loss = self.Q.fit(s, a, td_target, weights)
+                    logging.debug(f"Fit took {time.time() - fit_time:.2f} seconds.")
                     priorities = elementwise_loss + self.priority_eps
+                    prio_time = time.time()
                     self.buffer.update_priorities(indices, priorities)
+                    logging.debug(f"Prioritized update took {time.time() - prio_time:.2f} seconds.")
 
                 else:
-
+                    fit_time = time.time()
                     fit_loss, _ = self.Q.fit(s, a, td_target)
+                    logging.debug(f"Fit took {time.time() - fit_time:.2f} seconds.")
 
                 losses.append(fit_loss)
 
@@ -295,6 +311,8 @@ class Combined_Agent(Agent):
                 break
 
         if self._config["use_target_net"] and self.train_iter % self._config["update_target_every"] == 0:
+            update_time = time.time()
             self._update_target_net()
+            logging.debug(f"Target update took {time.time() - update_time:.2f} seconds.")
 
         return losses
