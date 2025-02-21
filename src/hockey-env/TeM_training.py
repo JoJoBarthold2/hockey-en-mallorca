@@ -14,6 +14,7 @@ from Agents.Tapas_en_Mallorca.Agent import Combined_Agent
 from Agents.Prio_n_step.Prio_DQN_Agent import Prio_DQN_Agent
 from Agents.Combined_Agent_Double.Dueling_DDQN_Agent import Dueling_DDQN_Agent as Previous_Combined_Agent
 
+initalization_time = time.time()        # Debugging
 parser = argparse.ArgumentParser(description = "Train Dueling DDQN Agent.")
 parser.add_argument("--use_dueling", type = str, default = "True", help = "Use Dueling Network")
 parser.add_argument("--use_double", type = str, default = "True", help = "Use Double DQN")
@@ -22,6 +23,11 @@ parser.add_argument("--use_noisy_net", type = str, default = "True", help = "Use
 parser.add_argument("--use_prio", type = str, default = "True", help = "Use Prioritized Buffuring Replay")
 parser.add_argument("--n_step", type = int, default = 5, help = "Number of steps to look ahead")
 parser.add_argument("--env_description", type = str, default = "", help = "Additional description for env_name")
+parser.add_argument("--seed", type = int, default = 7489, help = "Seed for the training")
+parser.add_argument("--use_more_actions", type = str, default = "True", help = "Use more actions")
+parser.add_argument("--max_episodes", type = int, default = 10000, help = "Max number of episodes")
+parser.add_argument("--games_to_play", type = int, default = 50, help = "Number of games to play")
+parser.add_argument("--train_iterations", type = int, default = 32, help = "Number of training iterations")
 args = parser.parse_args()
 
 use_dueling = True if args.use_dueling == "True" else False
@@ -164,10 +170,12 @@ saved_weights = []
 
 frame_idx = 0
 
-max_episodes = 10000
-games_to_play = 50
+max_episodes = args.max_episodes # 10000 default
+games_to_play = args.games_to_play # 50 default
 
-train_iterations = 32
+train_iterations = args.train_iterations # 32 default
+
+logging.info(f"Initialization time: {time.time()-initalization_time}")        # Debugging
 
 time_start = time.time()        # Debugging
 
@@ -182,8 +190,10 @@ for episode in range(max_episodes):
     logging.info(opponents_names[selected])
 
     if opponents_names[selected] == "Self_play":
+        self_play_time = time.time()
         weights = random.choice(saved_weights)
         opponent.Q.load(env_name, name = weights)
+        logging.debug(f" Self play time: {time.time()-self_play_time}")
 
     for game in range(games_to_play):
 
@@ -237,8 +247,9 @@ for episode in range(max_episodes):
             obs_agent2 = env.obs_agent_two()
 
             if done or truncated: break
-
+        training_time = time.time()        # Debugging
         loss = agent.train(train_iterations)
+        logging.debug(f" Training time: {time.time()-training_time}")      # Debug
         match_history[selected].append(info["winner"])
         logging.debug(info["winner"])
 
@@ -251,7 +262,9 @@ for episode in range(max_episodes):
         t += 1
 
     if agent._config["use_eps_decay"] and episode > int(0.8 * max_episodes):
+        epsilon_time = time.time()
         agent._perform_epsilon_decay()  
+        logging.debug(f" Epsilon decay time: {time.time()-epsilon_time}")
 
     if ((episode) % int(max_episodes/20) == 0) and episode > 0:  
         agent.Q.save(env_name, name = f"episode_{episode}")
