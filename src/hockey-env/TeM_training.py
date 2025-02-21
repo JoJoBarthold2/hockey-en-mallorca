@@ -19,7 +19,7 @@ parser = argparse.ArgumentParser(description = "Train Dueling DDQN Agent.")
 parser.add_argument("--use_dueling", type = str, default = "True", help = "Use Dueling Network")
 parser.add_argument("--use_double", type = str, default = "True", help = "Use Double DQN")
 parser.add_argument("--use_eps_decay", type = str, default = "False", help = "Use Epsilon Decay")
-parser.add_argument("--use_noisy_net", type = str, default = "True", help = "Use Noisy Net")
+parser.add_argument("--deactivate_noisy_net", action="store_false", help = "Don't use Noisy Net")
 parser.add_argument("--use_prio", type = str, default = "True", help = "Use Prioritized Buffuring Replay")
 parser.add_argument("--n_step", type = int, default = 5, help = "Number of steps to look ahead")
 parser.add_argument("--env_description", type = str, default = "", help = "Additional description for env_name")
@@ -36,7 +36,7 @@ use_dueling = True if args.use_dueling == "True" else False
 use_double = True if args.use_double == "True" else False
 use_eps_decay = True if args.use_eps_decay == "True" else False
 use_prio = True if args.use_prio == "True" else False
-use_noisy = True if args.use_noisy_net == "True" else False
+use_noisy =  args.deactivate_noisy_net
 
 SEED_TRAIN_1 = 7489
 SEED_TRAIN_2 = 1312
@@ -87,7 +87,7 @@ agent = Combined_Agent(
     n_step = args.n_step,
     hidden_sizes = [256, 256]
 )
-agent.Q.load("Dueling_Double_DQN_Prio_n_step_5_20_2_25", name = "episode_1000")
+#agent.Q.load("Dueling_Double_DQN_Prio_n_step_5_20_2_25", name = "episode_1000")
 
 opponent0 = RandomAgent(seed = seed)
 opponent1 = h_env.BasicOpponent()
