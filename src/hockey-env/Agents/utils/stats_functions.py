@@ -117,6 +117,34 @@ def plot_epsilon_evolution(env_name, epsilons, save_figure = True, name = "epsil
     if save_figure:
         _save_plot(env_name, name)
 
+def save_betas(env_name, betas, name = "beta"):
+
+        os.makedirs(f"{env_name}/stats/pkl", exist_ok=True)
+        beta_path = os.path.join(f"{env_name}/stats/pkl", f"{name}.pkl")
+
+        with open(beta_path, "wb") as f:
+            pickle.dump(betas, f)
+
+def load_betas(env_name, name = "beta"):
+
+    beta_path = os.path.join(f"{env_name}/stats/pkl", f"{name}.pkl")
+
+    with open(beta_path, "rb") as f:
+        betas = pickle.load(f)
+    
+    return betas
+
+def plot_beta_evolution(env_name, betas, save_figure = True, name = "beta_evolution"):
+    plt.figure(figsize=(10, 5))
+    plt.plot(betas, marker='o', linestyle='-', color='b', label='Beta Values')
+    plt.xlabel('Iteration')
+    plt.ylabel('Beta Value')
+    plt.title('Evolution of Beta Values')
+    plt.grid(True, linestyle='--', alpha=0.6)
+    plt.legend()
+    if save_figure:
+        _save_plot(env_name, name)
+
 def save_match_history(env_name, match_history, name = "match_history"):
 
     os.makedirs(f"{env_name}/stats/pkl", exist_ok = True)

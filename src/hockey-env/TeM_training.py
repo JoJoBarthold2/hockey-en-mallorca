@@ -86,6 +86,7 @@ agent = Combined_Agent(
     n_step = args.n_step,
     hidden_sizes = [256, 256]
 )
+agent.Q.load("Dueling_Double_DQN_Prio_n_step_5_20_2_25", name = "episode_1000")
 
 opponent0 = RandomAgent(seed = seed)
 opponent1 = h_env.BasicOpponent()
@@ -167,10 +168,11 @@ opponents_names = [
 
 match_history = [[] for _ in opponents]
 
+betas = []
 stats = []
 losses = []
 epsilons = []
-saved_weights = []
+saved_weights = ["episode_500, episode_1000"]
 
 frame_idx = 0
 
@@ -182,6 +184,7 @@ train_iterations = args.train_iterations # 32 default
 logging.info(f"Initialization time: {time.time()-initalization_time}")        # Debugging
 
 time_start = time.time()        # Debugging
+last_save_time = time.time()
 
 for episode in range(max_episodes):
 
@@ -260,6 +263,7 @@ for episode in range(max_episodes):
         if game % int(games_to_play/2) == 0:    
             losses.extend(loss)
             stats.append([episode, total_reward, t + 1])
+            betas.append(agent.beta)
             epsilons.append(agent._eps)
             logging.info(f"Episode {episode+1}/{max_episodes}, Game {game+1}/{games_to_play} - Total Reward: {total_reward}")
         
@@ -274,6 +278,7 @@ for episode in range(max_episodes):
         agent.Q.save(env_name, name = f"episode_{episode}")
         saved_weights.append(f"episode_{episode}")
         sf.save_epsilons(env_name, epsilons)
+        sf.save_betas(env_name, betas)
         sf.save_stats(env_name, stats, losses)
         sf.save_match_history(env_name, match_history)
         sf.plot_returns(stats, env_name)
@@ -283,10 +288,15 @@ for episode in range(max_episodes):
     if (episode % 20 == 0) and episode > 0:  
         sf.plot_match_evolution_by_chunks(env_name, match_history, opponents_names, games_to_play)
 
-    logging.debug(f" time per frame: {(time.time()-time_start)/frame_idx}")
+    if time.time() - last_save_time >= 600:  # 600 segundos = 10 minutos
+        agent.Q.save(env_name, name="more_recent")
+        last_save_time = time.time()
+
+    #logging.debug(f" time per frame: {(time.time()-time_start)/frame_idx}")
 
 agent.Q.save(env_name, name = "training_finished")
 sf.save_epsilons(env_name, epsilons)
+sf.save_betas(env_name, betas)
 sf.save_stats(env_name, stats, losses)
 sf.save_match_history(env_name, match_history)
 sf.plot_returns(stats, env_name)
