@@ -76,6 +76,7 @@ agent = Combined_Agent(
     n_step = args.n_step,
     hidden_sizes = [256, 256]
 )
+agent.Q.load("Dueling_Double_DQN_Prio_n_step_5_20_2_25", name = "episode_1000")
 
 opponent0 = RandomAgent(seed = seed)
 opponent1 = h_env.BasicOpponent()
@@ -171,6 +172,7 @@ games_to_play = 50
 train_iterations = 32
 
 time_start = time.time()        # Debugging
+last_save_time = time.time()
 
 for episode in range(max_episodes):
 
@@ -269,7 +271,11 @@ for episode in range(max_episodes):
     if (episode % 20 == 0) and episode > 0:  
         sf.plot_match_evolution_by_chunks(env_name, match_history, opponents_names, games_to_play)
 
-    logging.debug(f" time per frame: {(time.time()-time_start)/frame_idx}")
+    if time.time() - last_save_time >= 600:  # 600 segundos = 10 minutos
+        agent.Q.save(env_name, name="more_recent")
+        last_save_time = time.time()
+
+    #logging.debug(f" time per frame: {(time.time()-time_start)/frame_idx}")
 
 agent.Q.save(env_name, name = "training_finished")
 sf.save_epsilons(env_name, epsilons)
