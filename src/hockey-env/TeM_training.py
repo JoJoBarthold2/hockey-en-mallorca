@@ -162,7 +162,7 @@ betas = []
 stats = []
 losses = []
 epsilons = []
-saved_weights = []
+saved_weights = ["episode_500, episode_1000"]
 
 frame_idx = 0
 
