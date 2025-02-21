@@ -18,12 +18,12 @@ from Agents.Tapas_en_Mallorca.Adaptative_Dueling_Double_DQN.Agent import Adaptat
 
 initalization_time = time.time()        # Debugging
 parser = argparse.ArgumentParser(description = "Train Dueling DDQN Agent.")
-parser.add_argument("--use_dueling", action="store_true", help = "Use Dueling Network")
-parser.add_argument("--use_double", action="store_true", help = "Use Double DQN")
-parser.add_argument("--use_eps_decay", action="store_true", help = "Use Epsilon Decay")
-parser.add_argument("--use_noisy_net", action="store_true", help = "Use Noisy Net")
-parser.add_argument("--use_prio",action="store_true", help = "Use Prioritized Buffuring Replay")
-parser.add_argument("--n_step", type = int, default = 4, help = "Number of steps to look ahead")
+parser.add_argument("--use_dueling", type = str, default = "True", help = "Use Dueling Network")
+parser.add_argument("--use_double", type = str, default = "True", help = "Use Double DQN")
+parser.add_argument("--use_eps_decay", type = str, default = "False", help = "Use Epsilon Decay")
+parser.add_argument("--deactivate_noisy_net", action="store_false", help = "Don't use Noisy Net")
+parser.add_argument("--use_prio", type = str, default = "True", help = "Use Prioritized Buffuring Replay")
+parser.add_argument("--n_step", type = int, default = 5, help = "Number of steps to look ahead")
 parser.add_argument("--env_description", type = str, default = "", help = "Additional description for env_name")
 parser.add_argument("--seed", type = int, default = 7489, help = "Seed for the training")
 parser.add_argument("--normal_actions", action="store_false", help = " Don't Use more actions")
@@ -36,11 +36,11 @@ parser.add_argument("--weights", type = str, default = "", help = "Folder from w
 parser.add_argument("--weights_episode", type = str, default ="", help = "Episode of the weights to load")
 args = parser.parse_args()
 
-use_dueling = args.use_dueling
-use_double = args.use_double
-use_eps_decay = args.use_eps_decay
-use_prio = args.use_prio
-use_noisy = args.use_noisy_net
+use_dueling = True if args.use_dueling == "True" else False
+use_double = True if args.use_double == "True" else False
+use_eps_decay = True if args.use_eps_decay == "True" else False
+use_prio = True if args.use_prio == "True" else False
+use_noisy =  args.deactivate_noisy_net
 
 SEED_TRAIN_1 = 7489
 SEED_TRAIN_2 = 1312
@@ -94,6 +94,7 @@ if args.agent == "Combined":
     n_step = args.n_step,
     hidden_sizes = [256, 256]
 )
+#agent.Q.load("Dueling_Double_DQN_Prio_n_step_5_20_2_25", name = "episode_1000")
 
 if args.agent == "Adaptive" or args.agent == "adaptive" or args.agent == "Adaptative":
     agent = Adaptative_Dueling_Double_DQN(
