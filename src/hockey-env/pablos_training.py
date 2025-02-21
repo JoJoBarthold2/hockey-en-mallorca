@@ -84,7 +84,7 @@ saved_weights = []
 
 frame_idx = 0
 
-max_episodes = 3000
+max_episodes = 10000
 games_to_play = 50
 
 train_iterations = 32
@@ -163,7 +163,7 @@ for episode in range(max_episodes):
             epsilons.append(agent._eps)
             logging.info(f"Episode {episode+1}/{max_episodes}, Game {game+1}/{games_to_play} - Total Reward: {total_reward}")
         
-        if time.time() - last_save_time >= 5:  # 600 segundos = 10 minutos
+        if time.time() - last_save_time >= 300:  # 300 segundos = 5 minutos
             agent.Q.save(env_name, name="more_recent")
             last_save_time = time.time()
 
