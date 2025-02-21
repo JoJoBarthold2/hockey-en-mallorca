@@ -28,6 +28,7 @@ parser.add_argument("--use_more_actions", type = str, default = "True", help = "
 parser.add_argument("--max_episodes", type = int, default = 10000, help = "Max number of episodes")
 parser.add_argument("--games_to_play", type = int, default = 50, help = "Number of games to play")
 parser.add_argument("--train_iterations", type = int, default = 32, help = "Number of training iterations")
+parser.add_argument("--verbose", type = str, default = "False", help = "Verbose mode")
 args = parser.parse_args()
 
 use_dueling = True if args.use_dueling == "True" else False
@@ -43,7 +44,10 @@ seed = SEED_TRAIN_1
 USE_MORE_ACTIONS = True
 
 random.seed(seed)
-logging.basicConfig(level=logging.INFO)
+if args.verbose == "True":
+    logging.basicConfig(level=logging.DEBUG)
+else:    
+    logging.basicConfig(level=logging.INFO)
 
 reload(h_env)
 env = h_env.HockeyEnv()
