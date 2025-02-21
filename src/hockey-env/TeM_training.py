@@ -324,10 +324,10 @@ for episode in range(max_episodes):
             obs_agent2 = env.obs_agent_two()
 
             if done or truncated: break
+
         training_time = time.time()        # Debugging
         loss = agent.train(train_iterations)
-        if args.verbose:
-            logging.info(f" Training time: {time.time()-training_time}")      # Debug
+        logging.info(f" Training time: {time.time()-training_time}")      # Debug
         match_history[selected].append(info["winner"])
         logging.debug(info["winner"])
 

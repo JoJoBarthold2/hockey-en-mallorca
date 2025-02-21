@@ -11,6 +11,7 @@ import Agents.utils.n_step_replay_buffer as rb
 import Agents.utils.prioritized_replay_buffer as mem
 from Agents.Tapas_en_Mallorca.old.QFunction import QFunction
 
+logging.basicConfig(level=logging.INFO)
 class Combined_Agent(Agent):
 
     """Agent implementing Dueling-DoubleDQN."""
