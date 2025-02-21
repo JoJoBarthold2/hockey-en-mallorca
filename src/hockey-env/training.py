@@ -5,7 +5,7 @@ import logging
 import random
 import time
 import copy
-import os
+
 from Agents.utils.actions import MORE_ACTIONS
 from Agents.Prio_n_step.Prio_DQN_Agent import Prio_DQN_Agent
 from Agents.Random.random_agent import RandomAgent
@@ -18,7 +18,7 @@ import psutil
 import torch
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+logging.basicConfig(level=logging.INFO)
 
 def train_agent_self_play(
     agent=None,
@@ -211,10 +211,11 @@ def train_agent_self_play(
                 obs_agent2 = env.obs_agent_two()
                 t += 1
                 if done or truncated:
-                    logging.info(f"Game ended after {t+1} steps")
+                    logging.debug(f"Game ended after {t+1} steps")
                     break
-
+            time_start = time.time()
             loss = agent.train(train_iterations)
+            logging.info(f"Training time: {time.time()-time_start}")
             match_history[selected].append(info["winner"])
             logging.debug(info["winner"])
 

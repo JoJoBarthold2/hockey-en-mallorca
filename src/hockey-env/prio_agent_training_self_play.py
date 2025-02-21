@@ -2,9 +2,9 @@ from importlib import reload
 from gymnasium import spaces
 
 import logging
-from Prio_n_step_Agent.Prio_DQN_Agent import Prio_DQN_Agent
-from Prio_n_step_Agent.utils.actions import MORE_ACTIONS
-from Combined_Agent_Double.Dueling_DDQN_Agent import (
+from Agents.Prio_n_step.Prio_DQN_Agent import Prio_DQN_Agent
+from Agents.utils.actions import MORE_ACTIONS
+from Agents.Combined_Agent_Double.Dueling_DDQN_Agent import (
     Dueling_DDQN_Agent as Combined_Agent,
 )
 import hockey.hockey_env as h_env

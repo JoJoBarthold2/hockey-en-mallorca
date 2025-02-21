@@ -74,12 +74,7 @@ class PrioritizedReplayBuffer:
 
         indices = self._sample_proportional()
 
-        logging.debug(f"Transitions shape: {self.transitions.shape}")
-        logging.debug(f"Transitions type: {type(self.transitions)}")
-        logging.debug(f"Indices type: {type(indices)}")
-        logging.debug(f"indices: {indices}")
-        logging.debug(f"Number of indices: {len(indices)}")
-        logging.debug(f"Indices shape: {indices.shape}")
+       
         weights = np.array([self._calculate_weight(i, beta) for i in indices])
         return self.transitions[indices], indices, weights
 
@@ -119,8 +114,7 @@ class PrioritizedReplayBuffer:
 
         # calculate weights
         p_sample = self.sum_tree[idx] / self.sum_tree.sum()
-        logging.debug(f"p_sample: {p_sample}")
-        logging.debug(f"self.size: {self.size}")
+        
         weight = (p_sample * self.size) ** (-beta)
         weight = weight / max_weight
 
