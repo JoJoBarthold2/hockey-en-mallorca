@@ -8,7 +8,7 @@ class Memory():
         self.current_idx = 0
         self.max_size=max_size
 
-    def add_transition(self, transitions_new):
+    def store(self, transitions_new):
         if self.size == 0:
             blank_buffer = [np.asarray(transitions_new, dtype=object)] * self.max_size
             self.transitions = np.asarray(blank_buffer)

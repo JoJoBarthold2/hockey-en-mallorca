@@ -4,7 +4,7 @@ import random
 import logging
 import numpy as np
 from comprl.client import Agent
-import Agents.utils.memory as mem
+import Agents.utils.memory as memory
 from Agents.utils.actions import MORE_ACTIONS
 import Agents.utils.n_step_replay_buffer as rb
 import Agents.utils.prioritized_replay_buffer as mem
@@ -88,7 +88,7 @@ class Combined_Agent(Agent):
             )
             self.priority_eps = self._config["prioritized_replay_eps"]
         else:
-            self.buffer = mem.Memory(max_size = self._config["buffer_size"])
+            self.buffer = memory.Memory(max_size = self._config["buffer_size"])
 
         self.alpha = self._config["alpha"]
         self.beta = self._config["beta"]
@@ -219,10 +219,14 @@ class Combined_Agent(Agent):
 
                 # Optimize the lsq objective
                 if self.use_n_step:
-
-                    n_step_data = self.n_buffer.sample_from_idx(
+                    if self.use_prio:
+                        n_step_data = self.n_buffer.sample_from_idx(
                         indices, self._config["batch_size"]
                     )
+                    else: 
+                        n_step_data = self.n_buffer.sample(self._config["batch_size"])
+
+
                     n_s = np.stack(n_step_data[:, 0])
                     n_a = np.stack(n_step_data[:, 1])
                     n_rew = np.stack(n_step_data[:, 2])[:, None]
