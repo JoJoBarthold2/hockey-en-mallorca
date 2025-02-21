@@ -14,10 +14,10 @@ from Agents.Random.random_agent import RandomAgent
 
 
 parser = argparse.ArgumentParser(description = "Train Dueling DDQN Agent.")
-parser.add_argument("--use_dueling", type = str, default = "False", help = "Use Dueling Network")
-parser.add_argument("--use_double", type = str, default = "False", help = "Use Double DQN")
+parser.add_argument("--use_dueling", type = str, default = "True", help = "Use Dueling Network")
+parser.add_argument("--use_double", type = str, default = "True", help = "Use Double DQN")
 parser.add_argument("--use_eps_decay", type = str, default = "False", help = "Use Epsilon Decay")
-parser.add_argument("--use_noisy_net", type = str, default = "False", help = "Use Noisy Net")
+parser.add_argument("--use_noisy_net", type = str, default = "True", help = "Use Noisy Net")
 parser.add_argument("--env_description", type = str, default = "", help = "Additional description for env_name")
 args = parser.parse_args()
 
@@ -46,7 +46,7 @@ if use_double:
 name_parts.append("DQN")
 name = "_".join(name_parts)
 
-env_name = f"{name}_{args.env_description}"
+env_name = f"{name}_{args.env_description}" if args.env_description != "" else name
 logging.info(env_name)
 
 state_space = env.observation_space
@@ -90,6 +90,7 @@ games_to_play = 50
 train_iterations = 32
 
 time_start = time.time()        # Debugging
+last_save_time = time.time()
 
 for episode in range(max_episodes):
 
@@ -145,7 +146,7 @@ for episode in range(max_episodes):
             one_step_transition = (state, a1, reward, next_state, done)
 
             if one_step_transition != ():
-                agent.buffer.add_transition(one_step_transition)        ## Store for vales
+                agent.buffer.store(one_step_transition)        ## Store for vales
 
             state = next_state
             obs_agent2 = env.obs_agent_two()
@@ -162,6 +163,10 @@ for episode in range(max_episodes):
             epsilons.append(agent._eps)
             logging.info(f"Episode {episode+1}/{max_episodes}, Game {game+1}/{games_to_play} - Total Reward: {total_reward}")
         
+        if time.time() - last_save_time >= 5:  # 600 segundos = 10 minutos
+            agent.Q.save(env_name, name="more_recent")
+            last_save_time = time.time()
+
         t += 1
 
     if agent._config["use_eps_decay"] and episode > int(0.8 * max_episodes):

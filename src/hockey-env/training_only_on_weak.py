@@ -156,6 +156,10 @@ for episode in range(max_episodes):
             epsilons.append(agent._eps)
             #logging.info(f"Episode {episode+1}/{max_episodes}, Game {game+1}/{games_to_play} - Total Reward: {total_reward}")
         
+        if time.time() - last_save_time >= 600:  # 600 segundos = 10 minutos
+            agent.Q.save(env_name, name="more_recent")
+            last_save_time = time.time()
+
         t += 1
 
     if agent._config["use_eps_decay"] and episode > int(0.8 * max_episodes):
@@ -174,9 +178,7 @@ for episode in range(max_episodes):
     if (episode % 20 == 0) and episode > 0:  
         sf.plot_match_evolution_by_chunks(env_name, match_history, opponents_names, games_to_play)
 
-    if time.time() - last_save_time >= 600:  # 600 segundos = 10 minutos
-        agent.Q.save(env_name, name="more_recent")
-        last_save_time = time.time()
+    
 
     ##logging.debug(f" time per frame: {(time.time()-time_start)/frame_idx}")
 
