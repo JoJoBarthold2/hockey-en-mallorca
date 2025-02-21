@@ -37,7 +37,7 @@ seed = SEED_TRAIN_1
 USE_MORE_ACTIONS = True
 
 random.seed(seed)
-logging.basicConfig(level=logging.INFO)
+#logging.basicConfig(level=#logging.INFO)
 
 reload(h_env)
 env = h_env.HockeyEnv()
@@ -53,8 +53,8 @@ if use_prio:
 name_parts.append(f"n_step_{args.n_step}")
 name = "_".join(name_parts)
 
-env_name = f"{name}_{args.env_description}"
-logging.info(env_name)
+env_name = f"../weights/only_weak/{name}_{args.env_description}"
+#logging.info(env_name)
 
 state_space = env.observation_space
 
@@ -125,7 +125,7 @@ for episode in range(max_episodes):
 
             next_state, reward, done, truncated, info = env.step(full_action)
             
-            logging.debug(f" Env time: {time.time()- start_time}")      # Debugging
+            #logging.debug(f" Env time: {time.time()- start_time}")      # Debugging
 
             total_reward += reward
 
@@ -147,14 +147,14 @@ for episode in range(max_episodes):
 
         loss = agent.train(train_iterations)
         match_history[0].append(info["winner"])
-        logging.debug(info["winner"])
+        #logging.debug(info["winner"])
 
         if game % int(games_to_play/2) == 0:    
             losses.extend(loss)
             stats.append([episode, total_reward, t + 1])
             betas.append(agent.beta)
             epsilons.append(agent._eps)
-            logging.info(f"Episode {episode+1}/{max_episodes}, Game {game+1}/{games_to_play} - Total Reward: {total_reward}")
+            #logging.info(f"Episode {episode+1}/{max_episodes}, Game {game+1}/{games_to_play} - Total Reward: {total_reward}")
         
         t += 1
 
@@ -178,7 +178,7 @@ for episode in range(max_episodes):
         agent.Q.save(env_name, name="more_recent")
         last_save_time = time.time()
 
-    #logging.debug(f" time per frame: {(time.time()-time_start)/frame_idx}")
+    ##logging.debug(f" time per frame: {(time.time()-time_start)/frame_idx}")
 
 agent.Q.save(env_name, name = "training_finished")
 sf.save_epsilons(env_name, epsilons)
