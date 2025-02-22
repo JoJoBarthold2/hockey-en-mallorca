@@ -115,7 +115,7 @@ opponent3 = Prio_DQN_Agent(
         env = env,
         use_more_actions = USE_MORE_ACTIONS,
 )
-opponent3.Q.load("../weights/pure_prio_training_2_2_25", name = "episode_5000")
+opponent3.Q.load("pure_prio_training_2_2_25", name = "episode_5000")
 
 opponent4 = Prio_DQN_Agent(
     state_space,
@@ -128,7 +128,7 @@ opponent4 = Prio_DQN_Agent(
     env = env,
     use_more_actions = USE_MORE_ACTIONS,
 )
-opponent4.Q.load("../weights/pure_prio_training_2_2_25", name = "episode_7500")
+opponent4.Q.load("pure_prio_training_2_2_25", name = "episode_7500")
 
 opponent5 = Previous_Combined_Agent(
     state_space,
@@ -141,7 +141,7 @@ opponent5 = Previous_Combined_Agent(
     env = env,
     use_more_actions = USE_MORE_ACTIONS,
 )
-opponent5.Q.load("../weights/combined_training_6_2_25", name = "episode_5000")
+opponent5.Q.load("combined_training_6_2_25", name = "episode_5000")
 
 opponent6 = Previous_Combined_Agent(
     state_space,
@@ -154,7 +154,7 @@ opponent6 = Previous_Combined_Agent(
     env = env,
     use_more_actions = USE_MORE_ACTIONS,
 )
-opponent6.Q.load("../weights/combined_training_6_2_25", name = "episode_7500")
+opponent6.Q.load("combined_training_6_2_25", name = "episode_7500")
 
 agent_copy = copy.deepcopy(agent)
 
