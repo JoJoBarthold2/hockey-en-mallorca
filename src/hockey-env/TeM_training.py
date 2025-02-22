@@ -344,7 +344,8 @@ for episode in range(max_episodes):
         agent.Q.save(env_name, name = f"episode_{episode}")
         saved_weights.append(f"episode_{episode}")
         sf.save_epsilons(env_name, epsilons)
-        sf.save_betas(env_name, betas)
+        if args.use_prio:
+            sf.save_betas(env_name, betas)
         sf.save_stats(env_name, stats, losses)
         sf.save_match_history(env_name, match_history)
         sf.plot_returns(stats, env_name)
@@ -358,7 +359,8 @@ for episode in range(max_episodes):
         agent.Q.save(env_name, name = "most_recent")
         last_save_time = time.time()
         sf.save_epsilons(env_name, epsilons)
-        sf.save_betas(env_name, betas)
+        if args.use_prio:
+            sf.save_betas(env_name, betas)
         sf.save_stats(env_name, stats, losses)
         sf.save_match_history(env_name, match_history)
         sf.plot_returns(stats, env_name)
