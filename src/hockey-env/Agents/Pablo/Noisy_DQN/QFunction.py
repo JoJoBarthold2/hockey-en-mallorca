@@ -51,3 +51,4 @@ class QFunction(Feedforward):
     def load(self, env_name, name = "training_finished"):
             self.load_state_dict(torch.load(f"{env_name}/weights/{name}.pth"))
             print(f"Network loaded from {env_name}/weights/{name}.pth")
+            self.reset_noise()

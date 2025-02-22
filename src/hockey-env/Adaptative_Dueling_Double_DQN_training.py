@@ -80,8 +80,8 @@ agent = Adaptative_Dueling_Double_DQN(
 stats = []
 losses = []
 
-max_episodes = 500
-max_steps = 1000
+max_episodes = 2000
+max_steps = 3000
 train_iterations = 32  # Number of training steps per episode
 
 for episode in range(max_episodes):
@@ -90,11 +90,9 @@ for episode in range(max_episodes):
     env.action_space.seed(seed)
     state = state[0] if isinstance(state, tuple) else state  # Handle Gymnasium compatibility
     total_reward = 0
-    step = 0
 
     for t in range(max_steps):
 
-        step += 1
         done = truncated = False
 
         if USING_HOCKEY:
