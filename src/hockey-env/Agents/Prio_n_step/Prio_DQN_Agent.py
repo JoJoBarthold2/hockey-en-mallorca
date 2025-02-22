@@ -7,9 +7,11 @@ import uuid
 
 from comprl.client import Agent
 
-from Agents.Prio_n_step.QFunction import QFunction
+from Agents.Prio_n_step.QFunction import QFunction as QFunction_prio
+from Agents.Tapas_en_Mallorca.Adaptative_Dueling_Double_DQN.QFunction import QFunction 
 import Agents.utils.n_step_replay_buffer as rb
 import Agents.utils.prioritized_replay_buffer as mem
+import Agents.utils.memory as memory
 from Agents.utils.actions import MORE_ACTIONS
 
 
@@ -26,6 +28,7 @@ class Prio_DQN_Agent(Agent):
         n_steps=1,
         use_more_actions=True,
         env=None,
+        use_prio=True,
         **userconfig,
     ):
 
@@ -67,13 +70,15 @@ class Prio_DQN_Agent(Agent):
 
         self.n_steps = n_steps
         self.use_n_step = n_steps > 1
-
-        self.buffer = mem.PrioritizedReplayBuffer(
-            max_size=max_size,
-            alpha=alpha,
-            batch_size=self._config["batch_size"],
-        )
-
+        self.use_prio = use_prio
+        if self.use_prio:
+            self.buffer = mem.PrioritizedReplayBuffer(
+                max_size=max_size,
+                alpha=alpha,
+                batch_size=self._config["batch_size"],
+            )
+        else:
+            self.buffer = memory.Memory(max_size=max_size)
         if self.use_n_step:
             # we later combine the losses of the n-step transitions with the elementwise loss
             self.n_buffer = rb.N_Step_ReplayBuffer(
@@ -91,20 +96,36 @@ class Prio_DQN_Agent(Agent):
         self.sample_times = []
 
         # Q Network
-        self.Q = QFunction(
-            state_dim=self._state_space.shape[0],
-            action_dim=self._action_n,
-            learning_rate=self._config["learning_rate"],
-            hidden_sizes=self._config["hidden_sizes"],
-        )
+        if self.use_prio:
+            self.Q = QFunction_prio(
+                state_dim=self._state_space.shape[0],
+                action_dim=self._action_n,
+                learning_rate=self._config["learning_rate"],
+                hidden_sizes=self._config["hidden_sizes"],
+            )
+        else:
+            self.Q = QFunction(
+                state_dim=self._state_space.shape[0],
+                action_dim=self._action_n,
+                learning_rate=self._config["learning_rate"],
+                hidden_sizes=self._config["hidden_sizes"],
+            )
 
         # Q Target
-        self.Q_target = QFunction(
-            state_dim=self._state_space.shape[0],
-            action_dim=self._action_n,
-            learning_rate=0,  # We do not want to train the Target Function, only copy the weights of the Q Network
-            hidden_sizes=self._config["hidden_sizes"],
-        )
+        if self.use_prio:
+            self.Q_target = QFunction_prio(
+                state_dim=self._state_space.shape[0],
+                action_dim=self._action_n,
+                learning_rate=0,  # We do not want to train the Target Function, only copy the weights of the Q Network
+                hidden_sizes=self._config["hidden_sizes"],
+            )
+        else:
+            self.Q_target = QFunction(
+                state_dim=self._state_space.shape[0],
+                action_dim=self._action_n,
+                learning_rate=0,  # We do not want to train the Target Function, only copy the weights of the Q Network
+                hidden_sizes=self._config["hidden_sizes"],
+            )
         self._update_target_net()
 
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -181,10 +202,13 @@ class Prio_DQN_Agent(Agent):
                 # Sample from the replay buffer
 
                 start_time = time.time()  # Debugging
-
-                data, indices, weights = self.buffer.sample(
+                if self.use_prio:
+                    data, indices, weights = self.buffer.sample(
                     batch=self._config["batch_size"], beta=self.beta
                 )
+                else:
+                    data = self.buffer.sample(self._config["batch_size"])
+                    weights = None
 
                 logging.debug(f" Sample time: {time.time()- start_time}")  # Debugging
                 self.sample_times.append(time.time() - start_time)
@@ -212,10 +236,12 @@ class Prio_DQN_Agent(Agent):
                 start_time = time.time()  # Debugging
 
                 if self.use_n_step:
-
-                    n_step_data = self.n_buffer.sample_from_idx(
-                        indices, self._config["batch_size"]
-                    )
+                    if self.use_prio:
+                        n_step_data = self.n_buffer.sample_from_idx(
+                            indices, self._config["batch_size"]
+                        )
+                    else:
+                        n_step_data = self.n_buffer.sample(self._config["batch_size"])
                     n_s = np.stack(n_step_data[:, 0])
 
                     logging.debug(f" n_s shape: {n_s.shape}")  # Debugging
@@ -233,27 +259,39 @@ class Prio_DQN_Agent(Agent):
                     n_td_target = (
                         n_rew + self._config["discount"] * (1.0 - n_done) * n_v_prime
                     )
-
-                    fit_loss, elementwise_loss = self.Q.fit(
-                        s,
-                        a,
-                        td_target,
-                        weights,
-                        n_step_obs=n_s,
-                        n_step_act=n_a,
-                        n_step_targets=n_td_target,
-                    )
+                    if self.use_prio:
+                        fit_loss, elementwise_loss = self.Q.fit(
+                            s,
+                            a,
+                            td_target,
+                            weights,
+                            n_step_obs=n_s,
+                            n_step_act=n_a,
+                            n_step_targets=n_td_target,
+                        )
+                    else:
+                        fit_loss, elementwise_loss = self.Q.fit(
+                            s,
+                            a,
+                            td_target,
+                            n_step_obs=n_s,
+                            n_step_act=n_a,
+                            n_step_targets=n_td_target,
+                        )
 
                 else:
-                    fit_loss, elementwise_loss = self.Q.fit(s, a, td_target, weights)
+                    if self.use_prio:
+                        fit_loss, elementwise_loss = self.Q.fit(s, a, td_target, weights)
+                    else:
+                        fit_loss, elementwise_loss = self.Q.fit(s, a, td_target)
 
                 logging.debug(f" Fit time: {time.time()- start_time}")  # Debugging
 
-                priorities = elementwise_loss + self.priority_eps
-
+                
                 start_time = time.time()  # Debugging
-
-                self.buffer.update_priorities(indices, priorities)
+                if self.use_prio:
+                    priorities = elementwise_loss + self.priority_eps
+                    self.buffer.update_priorities(indices, priorities)
 
                 logging.debug(f" Update time: {time.time()- start_time}")  # Debugging
 

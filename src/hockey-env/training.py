@@ -211,7 +211,7 @@ def train_agent_self_play(
                 obs_agent2 = env.obs_agent_two()
                 t += 1
                 if done or truncated:
-                    logging.info(f"Game ended after {t+1} steps")
+                    #logging.info(f"Game ended after {t+1} steps")
                     break
 
             loss = agent.train(train_iterations)
