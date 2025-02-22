@@ -10,10 +10,11 @@ import hockey.hockey_env as h_env
 import Agents.utils.stats_functions as sf
 from Agents.utils.actions import MORE_ACTIONS
 from Agents.Random.random_agent import RandomAgent
-from Agents.Tapas_en_Mallorca.Agent import Combined_Agent
+from Agents.Tapas_en_Mallorca.old.Agent import Combined_Agent
 from Agents.Prio_n_step.Prio_DQN_Agent import Prio_DQN_Agent
 from Agents.Combined_Agent_Double.Dueling_DDQN_Agent import Dueling_DDQN_Agent as Previous_Combined_Agent
 from Agents.Pablo.Adaptative_Dueling_Double_DQN.Agent import Adaptative_Dueling_Double_DQN
+from Agents.Tapas_en_Mallorca.Adaptative_Dueling_Double_DQN.Agent import Adaptative_Dueling_Double_DQN_better_mem as Adaptive_Combined_Agent
 
 initalization_time = time.time()        # Debugging
 parser = argparse.ArgumentParser(description = "Train Dueling DDQN Agent.")
@@ -21,8 +22,8 @@ parser.add_argument("--use_dueling", type = str, default = "True", help = "Use D
 parser.add_argument("--use_double", type = str, default = "True", help = "Use Double DQN")
 parser.add_argument("--use_eps_decay", type = str, default = "False", help = "Use Epsilon Decay")
 parser.add_argument("--use_noisy_net", type = str, default = "False", help = "Use Noisy Net")
-parser.add_argument("--use_prio", type = str, default = "False", help = "Use Prioritized Buffuring Replay")
-parser.add_argument("--n_step", type = int, default = 1, help = "Number of steps to look ahead")
+parser.add_argument("--use_prio",action="store_true", help = "Use Prioritized Buffuring Replay")
+parser.add_argument("--n_step", type = int, default = 4, help = "Number of steps to look ahead")
 parser.add_argument("--env_description", type = str, default = "", help = "Additional description for env_name")
 parser.add_argument("--seed", type = int, default = 7489, help = "Seed for the training")
 parser.add_argument("--use_more_actions", type = str, default = "True", help = "Use more actions")
@@ -30,13 +31,15 @@ parser.add_argument("--max_episodes", type = int, default = 10000, help = "Max n
 parser.add_argument("--games_to_play", type = int, default = 50, help = "Number of games to play")
 parser.add_argument("--train_iterations", type = int, default = 32, help = "Number of training iterations")
 parser.add_argument("--verbose", action="store_true", help="Enable verbose mode")
-
+parser.add_argument("--agent", type = str, default = "Adaptive_Combined", help = "Agent to use", choices = ["Combined", "Adaptive", "Previous_Combined_Agent", "Prio_DQN", "Adaptive_Combined"])
+parser.add_argument("--weights", type = str, default = "", help = "Weights to load")
+parser.add_argument("--weights_episode", type = str, default ="", help = "Episode of the weights to load")
 args = parser.parse_args()
 
 use_dueling = True if args.use_dueling == "True" else False
 use_double = True if args.use_double == "True" else False
 use_eps_decay = True if args.use_eps_decay == "True" else False
-use_prio = True if args.use_prio == "True" else False
+use_prio = args.use_prio
 use_noisy = True if args.use_noisy_net == "True" else False
 
 SEED_TRAIN_1 = 7489
@@ -77,7 +80,8 @@ if(USE_MORE_ACTIONS):
 else: 
     action_space = env.discrete_action_space
 
-"""agent = Combined_Agent(
+if args.agent == "Combined":
+    agent = Combined_Agent(
     state_space,
     action_space,
     env = env,
@@ -90,19 +94,63 @@ else:
     n_step = args.n_step,
     hidden_sizes = [256, 256]
 )
-agent.Q.load("Dueling_Double_DQN_Prio_n_step_5_20_2_25", name = "episode_1000")"""
 
-agent = Adaptative_Dueling_Double_DQN(
-    state_space,
-    action_space,
-    env = env,
-    seed = seed,
-    use_eps_decay = use_eps_decay,
-    use_dueling = use_dueling,
-    use_double = use_double,
-    hidden_sizes = [256, 256]
-)
+if args.agent == "Adaptive":
+    agent = Adaptative_Dueling_Double_DQN(
+        state_space,
+        action_space,
+        env = env,
+        seed = seed,
+        use_eps_decay = use_eps_decay,
+        use_dueling = use_dueling,
+        use_double = use_double,
+        hidden_sizes = [256, 256]
+    )
 
+if args.agent == "Adaptive_Combined":
+    agent = Adaptive_Combined_Agent(
+        state_space,
+        action_space,
+        env = env,
+        seed = seed,
+        use_eps_decay = use_eps_decay,
+        use_dueling = use_dueling,
+        use_double = use_double,
+        use_noisy = use_noisy,
+        use_prio = use_prio,
+        n_step = args.n_step,
+        hidden_sizes = [256, 256]
+    )
+
+if args.agent == "Previous_Combined_Agent":
+    agent = Previous_Combined_Agent(
+        state_space,
+        action_space,
+        env = env,
+        seed = seed,
+        use_eps_decay = use_eps_decay,
+        use_dueling = use_dueling,
+        use_double = use_double,
+        use_noisy = use_noisy,
+        use_prio = use_prio,
+        n_step = args.n_step,
+        hidden_sizes = [256, 256]
+    )
+if args.agent == "Prio_DQN":
+    agent = Prio_DQN_Agent(
+        state_space,
+        action_space,
+        seed = seed,
+        eps = 0.01,
+        learning_rate = 0.0001,
+        hidden_sizes = [256, 256],
+        n_steps = 4,
+        env = env,
+        use_more_actions = USE_MORE_ACTIONS,
+    )
+
+if args.weights != "":
+    agent.Q.load(args.weights, name=args.weights_episode)   
 opponent0 = RandomAgent(seed = seed)
 opponent1 = h_env.BasicOpponent()
 opponent2 = h_env.BasicOpponent(weak = False)
@@ -255,7 +303,7 @@ for episode in range(max_episodes):
 
             total_reward += reward
 
-            """if agent.use_n_step:
+            if agent.use_n_step:
                 one_step_transition = agent.n_buffer.add_transition(
                     (state, a1, reward, next_state, done)
                 )
@@ -275,14 +323,15 @@ for episode in range(max_episodes):
             if done or truncated: break
         training_time = time.time()        # Debugging
         loss = agent.train(train_iterations)
-        logging.debug(f" Training time: {time.time()-training_time}")      # Debug
+        if args.verbose:
+            logging.info(f" Training time: {time.time()-training_time}")      # Debug
         match_history[selected].append(info["winner"])
         logging.debug(info["winner"])
 
         if game % int(games_to_play/2) == 0:    
             losses.extend(loss)
             stats.append([episode, total_reward, t + 1])
-            #betas.append(agent.beta)
+            betas.append(agent.beta)
             epsilons.append(agent._eps)
             logging.info(f"Episode {episode+1}/{max_episodes}, Game {game+1}/{games_to_play} - Total Reward: {total_reward}")
         
@@ -297,7 +346,7 @@ for episode in range(max_episodes):
         agent.Q.save(env_name, name = f"episode_{episode}")
         saved_weights.append(f"episode_{episode}")
         sf.save_epsilons(env_name, epsilons)
-        #sf.save_betas(env_name, betas)
+        sf.save_betas(env_name, betas)
         sf.save_stats(env_name, stats, losses)
         sf.save_match_history(env_name, match_history)
         sf.plot_returns(stats, env_name)

@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import os
 
-from Agents.Tapas_en_Mallorca.Feedforward import Feedforward
+from Agents.Tapas_en_Mallorca.old.Feedforward import Feedforward
 
 class QFunction(Feedforward):
     

@@ -9,7 +9,7 @@ import Agents.utils.memory as memory
 from Agents.utils.actions import MORE_ACTIONS
 import Agents.utils.n_step_replay_buffer as rb
 import Agents.utils.prioritized_replay_buffer as mem
-from Agents.Tapas_en_Mallorca.QFunction import QFunction
+from Agents.Tapas_en_Mallorca.old.QFunction import QFunction
 
 class Combined_Agent(Agent):
 
