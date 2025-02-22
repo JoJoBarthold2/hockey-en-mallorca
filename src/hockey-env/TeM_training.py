@@ -260,10 +260,10 @@ for episode in range(max_episodes):
     logging.info(opponents_names[selected])
 
     if opponents_names[selected] == "Self_play":
-        self_play_time = time.time()
+        #self_play_time = time.time()
         weights = random.choice(saved_weights)
         opponent.Q.load(env_name, name = weights)
-        logging.debug(f" Self play time: {time.time()-self_play_time}")
+       # logging.debug(f" Self play time: {time.time()-self_play_time}")
 
     for game in range(games_to_play):
 
@@ -338,9 +338,9 @@ for episode in range(max_episodes):
         t += 1
 
     if agent._config["use_eps_decay"] and episode > int(0.8 * max_episodes):
-        epsilon_time = time.time()
+        #epsilon_time = time.time()
         agent._perform_epsilon_decay()  
-        logging.debug(f" Epsilon decay time: {time.time()-epsilon_time}")
+        #logging.debug(f" Epsilon decay time: {time.time()-epsilon_time}")
 
     if ((episode) % int(max_episodes/20) == 0) and episode > 0:  
         agent.Q.save(env_name, name = f"episode_{episode}")

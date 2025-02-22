@@ -83,9 +83,9 @@ class Adaptative_Dueling_Double_DQN_better_mem(Agent):
             )
            
         else:
-            self.buffer = mem.ReplayBuffer(
+            self.buffer = mem.Memory(
                 max_size = self._config["max_size"],
-                batch_size = self._config["batch_size"]
+             
             )
         
 
@@ -184,9 +184,13 @@ class Adaptative_Dueling_Double_DQN_better_mem(Agent):
             
             if self.buffer.size > self._config["batch_size"]:
                 if self._config["use_prio"]:
+                    #time_sample = time.time()
                     data, indices, weights = self.buffer.sample(batch = self._config["batch_size"], beta = self.beta)
+                    #logging.info(f"Sample took {time.time() - time_sample:.2f} seconds.")
                 else:   
+                    #time_sample = time.time()
                     data = self.buffer.sample(batch = self._config["batch_size"])
+                    #logging.info(f"Sample took {time.time() - time_sample:.2f} seconds.")
                 s = np.stack(data[:, 0])                # Current state (s_t)
                 a = np.stack(data[:, 1])                # Action taken (a_t)
                 rew = np.stack(data[:, 2])[:, None]     # Reward received (r)
@@ -281,20 +285,19 @@ class Adaptative_Dueling_Double_DQN_better_mem(Agent):
                             n_step_targets = n_td_target,
                         )
 
-                elif self.use_prio:
-                    
-                    fit_time = time.time()
-                    fit_loss, elementwise_loss = self.Q.fit(s, a, td_target, weights)
-                    logging.debug(f"Fit took {time.time() - fit_time:.2f} seconds.")
-                    priorities = elementwise_loss + self.priority_eps
-                    prio_time = time.time()
-                    self.buffer.update_priorities(indices, priorities)
-                    logging.debug(f"Prioritized update took {time.time() - prio_time:.2f} seconds.")
+                elif self.use_prio and not self.use_n_step:
+                        #fit_time = time.time()
+                        fit_loss, elementwise_loss = self.Q.fit(s, a, td_target, weights)
+                        #logging.debug(f"Fit took {time.time() - fit_time:.2f} seconds.")
+                        priorities = elementwise_loss + self.priority_eps
+                        #prio_time = time.time()
+                        self.buffer.update_priorities(indices, priorities)
+                        #logging.debug(f"Prioritized update took {time.time() - prio_time:.2f} seconds.")
 
                 else:
-                    fit_time = time.time()
+                    #fit_time = time.time()
                     fit_loss, _ = self.Q.fit(s, a, td_target)
-                    logging.debug(f"Fit took {time.time() - fit_time:.2f} seconds.")
+                    #logging.debug(f"Fit took {time.time() - fit_time:.2f} seconds.")
 
                 losses.append(fit_loss)
                 
