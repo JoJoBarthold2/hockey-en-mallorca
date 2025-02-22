@@ -18,9 +18,9 @@ from Agents.Tapas_en_Mallorca.Adaptative_Dueling_Double_DQN.Agent import Adaptat
 
 initalization_time = time.time()        # Debugging
 parser = argparse.ArgumentParser(description = "Train Dueling DDQN Agent.")
-parser.add_argument("--use_dueling", type = str, default = "True", help = "Use Dueling Network")
-parser.add_argument("--use_double", type = str, default = "True", help = "Use Double DQN")
-parser.add_argument("--use_eps_decay", type = str, default = "False", help = "Use Epsilon Decay")
+parser.add_argument("--use_dueling", action="store_true", help = "Use Dueling Network")
+parser.add_argument("--use_double", action="store_true", help = "Use Double DQN")
+parser.add_argument("--use_eps_decay", action="store_true", help = "Use Epsilon Decay")
 parser.add_argument("--use_noisy_net", action="store_true", help = "Use Noisy Net")
 parser.add_argument("--use_prio",action="store_true", help = "Use Prioritized Buffuring Replay")
 parser.add_argument("--n_step", type = int, default = 4, help = "Number of steps to look ahead")
@@ -36,9 +36,9 @@ parser.add_argument("--weights", type = str, default = "", help = "Folder from w
 parser.add_argument("--weights_episode", type = str, default ="", help = "Episode of the weights to load")
 args = parser.parse_args()
 
-use_dueling = True if args.use_dueling == "True" else False
-use_double = True if args.use_double == "True" else False
-use_eps_decay = True if args.use_eps_decay == "True" else False
+use_dueling = args.use_dueling
+use_double = args.use_double
+use_eps_decay = args.use_eps_decay
 use_prio = args.use_prio
 use_noisy = args.use_noisy_net
 
