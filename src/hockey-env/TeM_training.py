@@ -21,7 +21,7 @@ parser = argparse.ArgumentParser(description = "Train Dueling DDQN Agent.")
 parser.add_argument("--use_dueling", type = str, default = "True", help = "Use Dueling Network")
 parser.add_argument("--use_double", type = str, default = "True", help = "Use Double DQN")
 parser.add_argument("--use_eps_decay", type = str, default = "False", help = "Use Epsilon Decay")
-parser.add_argument("--use_noisy_net", type = str, default = "False", help = "Use Noisy Net")
+parser.add_argument("--use_noisy_net", action="store_true", help = "Use Noisy Net")
 parser.add_argument("--use_prio",action="store_true", help = "Use Prioritized Buffuring Replay")
 parser.add_argument("--n_step", type = int, default = 4, help = "Number of steps to look ahead")
 parser.add_argument("--env_description", type = str, default = "", help = "Additional description for env_name")
@@ -40,7 +40,7 @@ use_dueling = True if args.use_dueling == "True" else False
 use_double = True if args.use_double == "True" else False
 use_eps_decay = True if args.use_eps_decay == "True" else False
 use_prio = args.use_prio
-use_noisy = True if args.use_noisy_net == "True" else False
+use_noisy = args.use_noisy_net
 
 SEED_TRAIN_1 = 7489
 SEED_TRAIN_2 = 1312
@@ -104,6 +104,7 @@ if args.agent == "Adaptive":
         use_eps_decay = use_eps_decay,
         use_dueling = use_dueling,
         use_double = use_double,
+        use_noisy = use_noisy,
         hidden_sizes = [256, 256]
     )
 
