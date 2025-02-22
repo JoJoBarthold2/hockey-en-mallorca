@@ -28,7 +28,7 @@ if torch.cuda.is_available():
     torch.backends.cudnn.deterministic = True
 
 #env_name = "CartPole-v1"
-env_name = "../remake/DQN_CartPole"
+env_name = "../remake/Noisy_DQN_CartPole"
 env = gym.make("CartPole-v1", render_mode = "rgb_array")
 if isinstance(env.action_space, spaces.Box):
     env = hc.DiscreteActionWrapper(env,5)

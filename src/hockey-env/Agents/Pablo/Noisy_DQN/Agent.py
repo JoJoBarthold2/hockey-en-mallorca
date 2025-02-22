@@ -97,6 +97,8 @@ class Noisy_DQN(Agent):
         self.Q_target.load_state_dict(self.Q.state_dict())
 
     def act(self, state, eps = None):
+
+        self.Q.reset_noise() 
         
         eps = self._eps if eps is None else eps
 

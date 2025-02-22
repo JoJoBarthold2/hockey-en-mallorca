@@ -37,7 +37,8 @@ class Adaptative_Dueling_Double_DQN(Agent):
             "hidden_sizes": [128, 128],
             "use_more_actions": True,
             "use_dueling": True,
-            "use_double": True
+            "use_double": True,
+            "use_noisy": False
         }
 
         self._config.update(userconfig)
@@ -58,6 +59,7 @@ class Adaptative_Dueling_Double_DQN(Agent):
 
         self.use_dueling = self._config["use_dueling"]
         self.use_double = self._config["use_double"]
+        self.use_noisy = self._config["use_noisy"]
 
         self.buffer = mem.Memory(max_size = self._config["buffer_size"])
 
@@ -67,7 +69,8 @@ class Adaptative_Dueling_Double_DQN(Agent):
             action_dim = self._action_n,
             learning_rate = self._config["learning_rate"],
             hidden_sizes = self._config["hidden_sizes"],
-            use_dueling = self.use_dueling
+            use_dueling = self.use_dueling,
+            use_noisy = self.use_noisy
         )
 
         # Q Target
@@ -76,7 +79,8 @@ class Adaptative_Dueling_Double_DQN(Agent):
             action_dim = self._action_n,
             learning_rate = 0,  # We do not want to train the Target Function, only copy the weights of the Q Network
             hidden_sizes = self._config["hidden_sizes"],
-            use_dueling = self.use_dueling
+            use_dueling = self.use_dueling,
+            use_noisy = self.use_noisy
         )
         self._update_target_net()
 
@@ -105,12 +109,17 @@ class Adaptative_Dueling_Double_DQN(Agent):
 
     def act(self, state, eps = None, validation = False):
         
+        if self.use_noisy:
+            self.Q.reset_noise() 
+            return self.Q.greedyAction(state)
+        
         eps = self._eps if eps is None else eps
 
         if np.random.random() > eps:
             action = self.Q.greedyAction(state)
         else: 
             action = self._action_space.sample()        
+
         return action
 
     def _perform_epsilon_decay(self):

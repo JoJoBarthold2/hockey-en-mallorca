@@ -17,6 +17,8 @@ class QFunction(Feedforward):
 
     def fit(self, states, actions, targets):
 
+        self.reset_noise()
+
         self.train() # put model in training mode
         self.optimizer.zero_grad()
 

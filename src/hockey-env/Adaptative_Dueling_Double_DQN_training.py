@@ -16,15 +16,19 @@ logging.basicConfig(level=logging.INFO)
 parser = argparse.ArgumentParser(description = "Train Adaptative Dueling DDQN Agent.")
 parser.add_argument("--use_dueling", type = str, default = "True", help = "Use Dueling Network")
 parser.add_argument("--use_double", type = str, default = "True", help = "Use Double DQN")
+parser.add_argument("--use_noisy", type = str, default = "False", help = "Use Noisy Linear layers")
 parser.add_argument("--use_eps_decay", type = str, default = "False", help = "Use Epsilon Decay")
 parser.add_argument("--env_description", type = str, default = "", help = "Additional description for env_name")
 args = parser.parse_args()
 
 use_dueling = True if args.use_dueling == "True" else False
 use_double = True if args.use_double == "True" else False
+use_noisy = True if args.use_noisy == "True" else False
 use_eps_decay = True if args.use_eps_decay == "True" else False
 
 name_parts = []
+if use_noisy:
+    name_parts.append("Noisy")
 if use_dueling:
     name_parts.append("Dueling")
 if use_double:
@@ -68,7 +72,9 @@ agent = Adaptative_Dueling_Double_DQN(
     batch_size = 64,
     use_eps_decay = use_eps_decay,
     use_dueling = use_dueling,
-    use_double = use_double
+    use_double = use_double,
+    use_noisy = use_noisy,
+    learning_rate = 0.0002
 )
 
 stats = []
@@ -85,7 +91,7 @@ for episode in range(max_episodes):
     state = state[0] if isinstance(state, tuple) else state  # Handle Gymnasium compatibility
     total_reward = 0
     step = 0
-    
+
     for t in range(max_steps):
 
         step += 1
