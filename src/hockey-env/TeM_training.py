@@ -313,10 +313,7 @@ for episode in range(max_episodes):
             else:
                 one_step_transition = (state, a1, reward, next_state, done)
                 if one_step_transition != ():
-                    agent.buffer.add_transition(one_step_transition)        ## Store for vales"""
-            one_step_transition = (state, a1, reward, next_state, done)
-            if one_step_transition != ():
-                agent.buffer.store(one_step_transition)
+                    agent.buffer.store(one_step_transition)
 
             state = next_state
             obs_agent2 = env.obs_agent_two()
