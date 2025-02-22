@@ -359,6 +359,13 @@ for episode in range(max_episodes):
     if time.time() - last_save_time >= 600:  # 600 segundos = 10 minutos
         agent.Q.save(env_name, name = "most_recent")
         last_save_time = time.time()
+        sf.save_epsilons(env_name, epsilons)
+        sf.save_betas(env_name, betas)
+        sf.save_stats(env_name, stats, losses)
+        sf.save_match_history(env_name, match_history)
+        sf.plot_returns(stats, env_name)
+        sf.plot_losses(losses, env_name)
+        logging.info(f"Most recent weights saved at episode {episode}")
 
     #logging.debug(f" time per frame: {(time.time()-time_start)/frame_idx}")
 
