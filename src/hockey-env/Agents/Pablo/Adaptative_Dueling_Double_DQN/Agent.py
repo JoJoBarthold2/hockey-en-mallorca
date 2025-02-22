@@ -18,7 +18,7 @@ class Adaptative_Dueling_Double_DQN(Agent):
         self._state_space = state_space
         self._action_space = action_space
         self._action_n = action_space.n
-
+        self.use_n_step = False
         self.train_iter = 0
 
         self._config = {
