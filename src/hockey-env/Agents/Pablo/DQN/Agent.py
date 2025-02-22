@@ -71,9 +71,6 @@ class DQN(Agent):
         )
         self._update_target_net()
 
-        torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        if torch.cuda.is_available(): print("USING Cuda")
-
     def get_step(self, state):
 
         state = np.array(state)
@@ -99,7 +96,7 @@ class DQN(Agent):
 
     def act(self, state, eps = None):
         
-        eps = self._eps if eps is None else None
+        eps = self._eps if eps is None else eps
 
         if np.random.random() > eps:
             action = self.Q.greedyAction(state)

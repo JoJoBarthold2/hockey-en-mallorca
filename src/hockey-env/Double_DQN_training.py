@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import random
 
-from Agents.Pablo.DQN.Agent import DQN
+from Agents.Pablo.Double_DQN.Agent import Double_DQN
 import Agents.utils.help_classes as hc
 import Agents.utils.stats_functions as sf
 from Agents.utils.actions import MORE_ACTIONS
@@ -28,14 +28,14 @@ if torch.cuda.is_available():
     torch.backends.cudnn.deterministic = True
 
 #env_name = "CartPole-v1"
-env_name = "../remake/DQN_CartPole"
+env_name = "../remake/Double_DQN_CartPole"
 env = gym.make("CartPole-v1", render_mode = "rgb_array")
 if isinstance(env.action_space, spaces.Box):
     env = hc.DiscreteActionWrapper(env,5)
 
 state_space = env.observation_space
 action_space = env.action_space
-agent = DQN(state_space, action_space, seed = seed, update_target_every = 5, batch_size = 64)
+agent = Double_DQN(state_space, action_space, seed = seed, update_target_every = 5, batch_size = 64)
 
 stats = []
 losses = []

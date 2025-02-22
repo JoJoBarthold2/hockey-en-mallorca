@@ -3,11 +3,37 @@ from gymnasium import spaces
 import numpy as np
 import torch
 import random
+import argparse
+import logging
 
-from Agents.Pablo.DQN.Agent import DQN
+from Agents.Pablo.Adaptative_Dueling_Double_DQN.Agent import Adaptative_Dueling_Double_DQN
 import Agents.utils.help_classes as hc
 import Agents.utils.stats_functions as sf
 from Agents.utils.actions import MORE_ACTIONS
+
+logging.basicConfig(level=logging.INFO)
+
+parser = argparse.ArgumentParser(description = "Train Adaptative Dueling DDQN Agent.")
+parser.add_argument("--use_dueling", type = str, default = "True", help = "Use Dueling Network")
+parser.add_argument("--use_double", type = str, default = "True", help = "Use Double DQN")
+parser.add_argument("--use_eps_decay", type = str, default = "False", help = "Use Epsilon Decay")
+parser.add_argument("--env_description", type = str, default = "", help = "Additional description for env_name")
+args = parser.parse_args()
+
+use_dueling = True if args.use_dueling == "True" else False
+use_double = True if args.use_double == "True" else False
+use_eps_decay = True if args.use_eps_decay == "True" else False
+
+name_parts = []
+if use_dueling:
+    name_parts.append("Dueling")
+if use_double:
+    name_parts.append("Double")
+name_parts.append("DQN")
+name = "_".join(name_parts)
+
+env_name = f"../remake/{name}_{args.env_description}" if args.env_description != "" else f"../remake/{name}"
+logging.info(env_name)
 
 SEED_TRAIN_1 = 7489
 SEED_TRAIN_2 = 1312
@@ -28,14 +54,22 @@ if torch.cuda.is_available():
     torch.backends.cudnn.deterministic = True
 
 #env_name = "CartPole-v1"
-env_name = "../remake/DQN_CartPole"
 env = gym.make("CartPole-v1", render_mode = "rgb_array")
 if isinstance(env.action_space, spaces.Box):
     env = hc.DiscreteActionWrapper(env,5)
 
 state_space = env.observation_space
 action_space = env.action_space
-agent = DQN(state_space, action_space, seed = seed, update_target_every = 5, batch_size = 64)
+agent = Adaptative_Dueling_Double_DQN(
+    state_space,
+    action_space,
+    seed = seed,
+    update_target_every = 10,
+    batch_size = 64,
+    use_eps_decay = use_eps_decay,
+    use_dueling = use_dueling,
+    use_double = use_double
+)
 
 stats = []
 losses = []
@@ -83,7 +117,7 @@ for episode in range(max_episodes):
     if agent._config["use_eps_decay"] and episode > int(0.5 * max_episodes):
         agent._perform_epsilon_decay()
 
-    print(f"Episode {episode+1}/{max_episodes}, Total Reward: {total_reward}")
+    logging.info(f"Episode {episode+1}/{max_episodes}, Total Reward: {total_reward}")
         
     if ((episode) % int(max_episodes/10) == 0) and episode > 0:
         agent.Q.save(env_name, name = f"episode_{episode}")

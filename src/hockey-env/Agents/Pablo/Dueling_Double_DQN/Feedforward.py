@@ -10,7 +10,8 @@ class Feedforward(torch.nn.Module):
         layer_sizes = [self.input_size] + self.hidden_sizes
         self.layers = torch.nn.ModuleList([ torch.nn.Linear(i, o) for i,o in zip(layer_sizes[:-1], layer_sizes[1:])])
         self.activations = [ torch.nn.Tanh() for l in  self.layers ]
-        self.readout = torch.nn.Linear(self.hidden_sizes[-1], self.output_size)
+        self.value_stream = torch.nn.Linear(hidden_sizes[-1], 1)
+        self.advantage_stream = torch.nn.Linear(hidden_sizes[-1], output_size)
 
         for layer in self.layers:
             if isinstance(layer, torch.nn.Linear):
@@ -18,15 +19,21 @@ class Feedforward(torch.nn.Module):
                 if layer.bias is not None:
                     torch.nn.init.zeros_(layer.bias)
         
-        torch.nn.init.xavier_normal_(self.readout.weight)
-        torch.nn.init.zeros_(self.readout.bias)
+        torch.nn.init.xavier_normal_(self.value_stream.weight)
+        torch.nn.init.zeros_(self.value_stream.bias)
+
+        torch.nn.init.xavier_normal_(self.advantage_stream.weight)
+        torch.nn.init.zeros_(self.advantage_stream.bias)
 
     def forward(self, x):
-        for layer,activation_fun in zip(self.layers, self.activations):
+        for layer, activation_fun in zip(self.layers, self.activations):
             x = activation_fun(layer(x))
-        return self.readout(x)
+
+        value = self.value_stream(x)
+        advantage = self.advantage_stream(x)
+
+        return value + (advantage - advantage.mean(dim = -1, keepdim = True))
 
     def predict(self, x):
         with torch.no_grad():
-            x = torch.tensor(x, dtype=torch.float32, device = next(self.parameters()).device)
-            return self.forward(x)
+            return self.forward(torch.from_numpy(x.astype(np.float32))).numpy()

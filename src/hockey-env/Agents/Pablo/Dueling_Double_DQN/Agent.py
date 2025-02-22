@@ -3,11 +3,11 @@ import torch
 import random
 import numpy as np
 from comprl.client import Agent
-import Agents.utils.memory_CUDA as mem
+import Agents.utils.memory as mem
 from Agents.utils.actions import MORE_ACTIONS
-from Agents.Pablo.DQN_CUDA.QFunction import QFunction
+from Agents.Pablo.Dueling_Double_DQN.QFunction import QFunction
 
-class DQN(Agent):
+class Dueling_Double_DQN(Agent):
 
     """Agent implementing Dueling-DoubleDQN."""
 
@@ -43,17 +43,10 @@ class DQN(Agent):
         torch.manual_seed(self._config["seed"])
 
         # Ensure deterministic behavior in CUDA if available
-        
         if torch.cuda.is_available():
-            self.device = torch.device("cuda")
             torch.cuda.manual_seed_all(self._config["seed"])
             torch.backends.cudnn.deterministic = True
             torch.backends.cudnn.benchmark = False
-
-        else:
-            self.device = torch.device("cpu")
-
-        print(f"Using {self.device}")
 
         self._eps = self._config["eps"]
 
@@ -67,8 +60,7 @@ class DQN(Agent):
             action_dim = self._action_n,
             learning_rate = self._config["learning_rate"],
             hidden_sizes = self._config["hidden_sizes"],
-            device = self.device
-        ).to(self.device)
+        )
 
         # Q Target
         self.Q_target = QFunction(
@@ -76,8 +68,7 @@ class DQN(Agent):
             action_dim = self._action_n,
             learning_rate = 0,  # We do not want to train the Target Function, only copy the weights of the Q Network
             hidden_sizes = self._config["hidden_sizes"],
-            device = self.device
-        ).to(self.device)
+        )
         self._update_target_net()
 
     def get_step(self, state):
@@ -105,15 +96,13 @@ class DQN(Agent):
 
     def act(self, state, eps = None):
         
-        #print("ACT - State device:", state.device)  # Should be cuda:0
-
         eps = self._eps if eps is None else eps
 
         if np.random.random() > eps:
             action = self.Q.greedyAction(state)
         else: 
             action = self._action_space.sample()        
-        return int(action.item())
+        return action
 
     def _perform_epsilon_decay(self):
 
@@ -133,33 +122,35 @@ class DQN(Agent):
             
             if self.buffer.size > self._config["batch_size"]:
 
-                s, a, rew, s_prime, done = self.buffer.sample(batch=self._config["batch_size"])
+                data = self.buffer.sample(batch = self._config["batch_size"])
+                s = np.stack(data[:, 0])                # Current state (s_t)
+                a = np.stack(data[:, 1])                # Action taken (a_t)
+                rew = np.stack(data[:, 2])[:, None]     # Reward received (r)
+                s_prime = np.stack(data[:, 3])          # Next state (s_t+1)
+                done = np.stack(data[:,4])[:,None]      # Done flag (1 if terminal, else 0)
 
                 if self._config["use_target_net"]:
                     v_prime = self.Q_target.maxQ(s_prime)
                 else:
                     v_prime = self.Q.maxQ(s_prime)
 
-                rew = rew.view(-1, 1)  # Convert to [batch_size, 1]
-                done = done.view(-1, 1)  # Convert to [batch_size, 1]
-                v_prime = v_prime.view(-1, 1)
+                if self._config["use_target_net"]:
+                    a_prime = self.Q.greedyAction(s_prime)      # Get best action using Q network
+                    s_prime_tensor = torch.tensor(s_prime, dtype=torch.float32)
+                    a_prime_tensor = torch.tensor(a_prime, dtype=torch.int64)
+                    v_prime = self.Q_target.Q_value(s_prime_tensor, a_prime_tensor)     # Evaluate it using Q_target
 
-                #print(f"Shape of v_prime: {v_prime.shape}")  # Debugging output
+                    type(v_prime)
 
-                # Target                                              
-                td_target = rew + self._config["discount"] * (1.0 - done) * v_prime
-                td_target = td_target.view(-1, 1)  # Ensure targets are [batch_size, 1]
+                else:
+                    v_prime = self.Q.maxQ(s_prime)
+
+                # Double DQN
                 
-                #print(f"Shape of rew: {rew.shape}, Shape of done: {done.shape}, Shape of td_target: {td_target.shape}")
 
-                #print(f"Batch size used: {self._config['batch_size']}, Shape of s: {s.shape}")
-
-                """print("TRAIN - Sampled States device:", s.device)
-                print("TRAIN - Sampled Actions device:", a.device)
-                print("TRAIN - Sampled Rewards device:", rew.device)
-                print("TRAIN - Sampled Next States device:", s_prime.device)
-                print("TRAIN - Sampled Dones device:", done.device)"""
-
+                # target                                              
+                td_target = rew + self._config["discount"] * (1.0 - done) * v_prime.detach().numpy()
+                
                 # optimize the lsq objective
                 fit_loss = self.Q.fit(s, a, td_target)
                 
