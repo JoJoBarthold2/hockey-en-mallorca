@@ -31,7 +31,7 @@ parser.add_argument("--max_episodes", type = int, default = 10000, help = "Max n
 parser.add_argument("--games_to_play", type = int, default = 50, help = "Number of games to play")
 parser.add_argument("--train_iterations", type = int, default = 32, help = "Number of training iterations")
 parser.add_argument("--verbose", action="store_true", help="Enable verbose mode")
-parser.add_argument("--agent", type = str, default = "Adaptive_Combined", help = "Agent to use", choices = ["Combined", "Adaptive", "Previous_Combined_Agent", "Prio_DQN", "Adaptive_Combined"])
+parser.add_argument("--agent", type = str, default = "Adaptive_Combined", help = "Agent to use", choices = ["Combined", "Adaptive", "Previous_Combined_Agent", "Prio_DQN", "Adaptive_Combined", "adaptive", "Adaptative"])
 parser.add_argument("--weights", type = str, default = "", help = "Weights to load")
 parser.add_argument("--weights_episode", type = str, default ="", help = "Episode of the weights to load")
 args = parser.parse_args()
@@ -95,7 +95,7 @@ if args.agent == "Combined":
     hidden_sizes = [256, 256]
 )
 
-if args.agent == "Adaptive":
+if args.agent == "Adaptive" or args.agent == "adaptive" or args.agent == "Adaptative":
     agent = Adaptative_Dueling_Double_DQN(
         state_space,
         action_space,
