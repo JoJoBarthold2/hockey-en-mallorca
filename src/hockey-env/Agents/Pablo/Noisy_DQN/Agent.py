@@ -5,11 +5,11 @@ import numpy as np
 from comprl.client import Agent
 import Agents.utils.memory as mem
 from Agents.utils.actions import MORE_ACTIONS
-from Agents.Pablo.Double_DQN.QFunction import QFunction
+from Agents.Pablo.Noisy_DQN.QFunction import QFunction
 
-class Double_DQN(Agent):
+class Noisy_DQN(Agent):
 
-    """Agent implementing Double DQN."""
+    """Agent implementing Noisy DQN."""
 
     def __init__(self, state_space, action_space, env = None, **userconfig):
 
@@ -131,17 +131,13 @@ class Double_DQN(Agent):
                 s_prime = np.stack(data[:, 3])          # Next state (s_t+1)
                 done = np.stack(data[:,4])[:,None]      # Done flag (1 if terminal, else 0)
 
-                # Double DQN
                 if self._config["use_target_net"]:
-                    a_prime = self.Q.greedyAction(s_prime)      # Get best action using Q network
-                    s_prime_tensor = torch.tensor(s_prime, dtype=torch.float32)
-                    a_prime_tensor = torch.tensor(a_prime, dtype=torch.int64)
-                    v_prime = self.Q_target.Q_value(s_prime_tensor, a_prime_tensor)     # Evaluate it using Q_target
+                    v_prime = self.Q_target.maxQ(s_prime)
                 else:
                     v_prime = self.Q.maxQ(s_prime)
-                    
-                # target                                              
-                td_target = rew + self._config["discount"] * (1.0 - done) * v_prime.detach().numpy()
+
+                # Target                                              
+                td_target = rew + self._config["discount"] * (1.0 - done) * v_prime
                 
                 # optimize the lsq objective
                 fit_loss = self.Q.fit(s, a, td_target)

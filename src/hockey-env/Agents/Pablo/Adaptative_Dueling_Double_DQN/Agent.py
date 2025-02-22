@@ -9,9 +9,11 @@ from Agents.Pablo.Adaptative_Dueling_Double_DQN.QFunction import QFunction
 
 class Adaptative_Dueling_Double_DQN(Agent):
 
-    """Agent implementing Dueling-DoubleDQN."""
+    """Agent implementing Adaptative Dueling Double DQN."""
 
-    def __init__(self, state_space, action_space, **userconfig):
+    def __init__(self, state_space, action_space, env = None, **userconfig):
+
+        self.env = env
 
         self._state_space = state_space
         self._action_space = action_space
@@ -101,7 +103,7 @@ class Adaptative_Dueling_Double_DQN(Agent):
     def _update_target_net(self):
         self.Q_target.load_state_dict(self.Q.state_dict())
 
-    def act(self, state, eps = None):
+    def act(self, state, eps = None, validation = False):
         
         eps = self._eps if eps is None else eps
 

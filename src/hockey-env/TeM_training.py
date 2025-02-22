@@ -13,13 +13,14 @@ from Agents.Random.random_agent import RandomAgent
 from Agents.Tapas_en_Mallorca.Agent import Combined_Agent
 from Agents.Prio_n_step.Prio_DQN_Agent import Prio_DQN_Agent
 from Agents.Combined_Agent_Double.Dueling_DDQN_Agent import Dueling_DDQN_Agent as Previous_Combined_Agent
+from Agents.Pablo.Adaptative_Dueling_Double_DQN.Agent import Adaptative_Dueling_Double_DQN
 
 initalization_time = time.time()        # Debugging
 parser = argparse.ArgumentParser(description = "Train Dueling DDQN Agent.")
 parser.add_argument("--use_dueling", type = str, default = "True", help = "Use Dueling Network")
 parser.add_argument("--use_double", type = str, default = "True", help = "Use Double DQN")
 parser.add_argument("--use_eps_decay", type = str, default = "False", help = "Use Epsilon Decay")
-parser.add_argument("--use_noisy_net", type = str, default = "True", help = "Use Noisy Net")
+parser.add_argument("--use_noisy_net", type = str, default = "False", help = "Use Noisy Net")
 parser.add_argument("--use_prio", type = str, default = "True", help = "Use Prioritized Buffuring Replay")
 parser.add_argument("--n_step", type = int, default = 5, help = "Number of steps to look ahead")
 parser.add_argument("--env_description", type = str, default = "", help = "Additional description for env_name")
@@ -74,7 +75,7 @@ if(USE_MORE_ACTIONS):
 else: 
     action_space = env.discrete_action_space
 
-agent = Combined_Agent(
+"""agent = Combined_Agent(
     state_space,
     action_space,
     env = env,
@@ -87,7 +88,18 @@ agent = Combined_Agent(
     n_step = args.n_step,
     hidden_sizes = [256, 256]
 )
-agent.Q.load("Dueling_Double_DQN_Prio_n_step_5_20_2_25", name = "episode_1000")
+agent.Q.load("Dueling_Double_DQN_Prio_n_step_5_20_2_25", name = "episode_1000")"""
+
+agent = Adaptative_Dueling_Double_DQN(
+    state_space,
+    action_space,
+    env = env,
+    seed = seed,
+    use_eps_decay = use_eps_decay,
+    use_dueling = use_dueling,
+    use_double = use_double,
+    hidden_sizes = [256, 256]
+)
 
 opponent0 = RandomAgent(seed = seed)
 opponent1 = h_env.BasicOpponent()
@@ -103,7 +115,7 @@ opponent3 = Prio_DQN_Agent(
         env = env,
         use_more_actions = USE_MORE_ACTIONS,
 )
-opponent3.Q.load("pure_prio_training_2_2_25", name = "episode_5000")
+opponent3.Q.load("../weights/pure_prio_training_2_2_25", name = "episode_5000")
 
 opponent4 = Prio_DQN_Agent(
     state_space,
@@ -116,7 +128,7 @@ opponent4 = Prio_DQN_Agent(
     env = env,
     use_more_actions = USE_MORE_ACTIONS,
 )
-opponent4.Q.load("pure_prio_training_2_2_25", name = "episode_7500")
+opponent4.Q.load("../weights/pure_prio_training_2_2_25", name = "episode_7500")
 
 opponent5 = Previous_Combined_Agent(
     state_space,
@@ -129,7 +141,7 @@ opponent5 = Previous_Combined_Agent(
     env = env,
     use_more_actions = USE_MORE_ACTIONS,
 )
-opponent5.Q.load("combined_training_6_2_25", name = "episode_5000")
+opponent5.Q.load("../weights/combined_training_6_2_25", name = "episode_5000")
 
 opponent6 = Previous_Combined_Agent(
     state_space,
@@ -142,7 +154,7 @@ opponent6 = Previous_Combined_Agent(
     env = env,
     use_more_actions = USE_MORE_ACTIONS,
 )
-opponent6.Q.load("combined_training_6_2_25", name = "episode_7500")
+opponent6.Q.load("../weights/combined_training_6_2_25", name = "episode_7500")
 
 agent_copy = copy.deepcopy(agent)
 
@@ -173,7 +185,7 @@ betas = []
 stats = []
 losses = []
 epsilons = []
-saved_weights = ["episode_500, episode_1000"]
+saved_weights = []
 
 frame_idx = 0
 
@@ -206,6 +218,7 @@ for episode in range(max_episodes):
     for game in range(games_to_play):
 
         state, _ = env.reset(seed = seed)
+        env.action_space.seed(seed)
         obs_agent2 = env.obs_agent_two()
         total_reward = 0
 
@@ -240,7 +253,7 @@ for episode in range(max_episodes):
 
             total_reward += reward
 
-            if agent.use_n_step:
+            """if agent.use_n_step:
                 one_step_transition = agent.n_buffer.add_transition(
                     (state, a1, reward, next_state, done)
                 )
@@ -249,7 +262,10 @@ for episode in range(max_episodes):
             else:
                 one_step_transition = (state, a1, reward, next_state, done)
                 if one_step_transition != ():
-                    agent.buffer.add_transition(one_step_transition)        ## Store for vales
+                    agent.buffer.add_transition(one_step_transition)        ## Store for vales"""
+            one_step_transition = (state, a1, reward, next_state, done)
+            if one_step_transition != ():
+                agent.buffer.store(one_step_transition)
 
             state = next_state
             obs_agent2 = env.obs_agent_two()
@@ -264,7 +280,7 @@ for episode in range(max_episodes):
         if game % int(games_to_play/2) == 0:    
             losses.extend(loss)
             stats.append([episode, total_reward, t + 1])
-            betas.append(agent.beta)
+            #betas.append(agent.beta)
             epsilons.append(agent._eps)
             logging.info(f"Episode {episode+1}/{max_episodes}, Game {game+1}/{games_to_play} - Total Reward: {total_reward}")
         
@@ -279,28 +295,28 @@ for episode in range(max_episodes):
         agent.Q.save(env_name, name = f"episode_{episode}")
         saved_weights.append(f"episode_{episode}")
         sf.save_epsilons(env_name, epsilons)
-        sf.save_betas(env_name, betas)
+        #sf.save_betas(env_name, betas)
         sf.save_stats(env_name, stats, losses)
         sf.save_match_history(env_name, match_history)
         sf.plot_returns(stats, env_name)
         sf.plot_losses(losses, env_name)
-        sf.plot_epsilon_evolution(env_name, epsilons)
+        #sf.plot_epsilon_evolution(env_name, epsilons)
 
     if (episode % 20 == 0) and episode > 0:  
         sf.plot_match_evolution_by_chunks(env_name, match_history, opponents_names, games_to_play)
 
     if time.time() - last_save_time >= 600:  # 600 segundos = 10 minutos
-        agent.Q.save(env_name, name="more_recent")
+        agent.Q.save(env_name, name = "most_recent")
         last_save_time = time.time()
 
     #logging.debug(f" time per frame: {(time.time()-time_start)/frame_idx}")
 
 agent.Q.save(env_name, name = "training_finished")
 sf.save_epsilons(env_name, epsilons)
-sf.save_betas(env_name, betas)
+#sf.save_betas(env_name, betas)
 sf.save_stats(env_name, stats, losses)
 sf.save_match_history(env_name, match_history)
 sf.plot_returns(stats, env_name)
 sf.plot_losses(losses, env_name)
-sf.plot_epsilon_evolution(env_name, epsilons)
+#sf.plot_epsilon_evolution(env_name, epsilons)
 sf.plot_match_evolution_by_chunks(env_name, match_history, opponents_names, games_to_play)

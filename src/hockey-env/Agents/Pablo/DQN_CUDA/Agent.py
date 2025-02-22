@@ -9,9 +9,11 @@ from Agents.Pablo.DQN_CUDA.QFunction import QFunction
 
 class DQN(Agent):
 
-    """Agent implementing Dueling-DoubleDQN."""
+    """Agent implementing DQN with CUDA."""
 
-    def __init__(self, state_space, action_space, **userconfig):
+    def __init__(self, state_space, action_space, env = None, **userconfig):
+
+        self.env = env
 
         self._state_space = state_space
         self._action_space = action_space

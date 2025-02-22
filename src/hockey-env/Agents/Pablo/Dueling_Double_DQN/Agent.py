@@ -9,9 +9,11 @@ from Agents.Pablo.Dueling_Double_DQN.QFunction import QFunction
 
 class Dueling_Double_DQN(Agent):
 
-    """Agent implementing Dueling-DoubleDQN."""
+    """Agent implementing Dueling Double DQN."""
 
-    def __init__(self, state_space, action_space, **userconfig):
+    def __init__(self, state_space, action_space, env = None, **userconfig):
+
+        self.env = env
 
         self._state_space = state_space
         self._action_space = action_space
