@@ -55,6 +55,8 @@ reload(h_env)
 env = h_env.HockeyEnv()
 
 name_parts = []
+if use_noisy:
+    name_parts.append("Noisy")
 if use_dueling:
     name_parts.append("Dueling")
 if use_double:
