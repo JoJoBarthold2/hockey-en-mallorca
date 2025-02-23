@@ -6,9 +6,10 @@ import hockey.hockey_env as h_env
 from Agents.utils.actions import MORE_ACTIONS
 from comprl.client import Agent, launch_client
 from Agents.Random.random_agent import RandomAgent
-from Agents.Tapas_en_Mallorca.old.Agent import Combined_Agent
+
 from Agents.Prio_n_step.Prio_DQN_Agent import Prio_DQN_Agent
-from Agents.Combined_Agent_Double.Dueling_DDQN_Agent import Dueling_DDQN_Agent as Previous_Combined_Agent
+from Agents.Pablo.Adaptative_Dueling_Double_DQN.Agent import Adaptative_Dueling_Double_DQN 
+from Agents.Tapas_en_Mallorca.Adaptative_Dueling_Double_DQN.Agent import Adaptative_Dueling_Double_DQN_better_mem
 
 
 SEED_TRAIN_1 = 7489
@@ -27,7 +28,7 @@ def initialize_agent(agent_args: list[str]) -> Agent:
     parser.add_argument(
         "--agent",
         type=str,
-        choices=["random", "Prio_DQN", "Previous_Combined_DQN", "DDDQN", Combined_Agent],
+        choices=["random", "Prio_DQN", "Pablo", "Combined" ],
         default="random",
         help="Which agent to use.",
     )
@@ -49,7 +50,7 @@ def initialize_agent(agent_args: list[str]) -> Agent:
     elif args.agent == "Prio_DQN":
         env_name = "../weights/prio_agent_self_play_17_2_25"
         env = h_env.HockeyEnv()
-        h_env.HockeyEnv().seed(seed)
+       
 
         state_space = env.observation_space
 
@@ -71,10 +72,11 @@ def initialize_agent(agent_args: list[str]) -> Agent:
         )
         agent.Q.load(env_name, name=episode)
 
-    elif args.agent == "Previous_Combined_DQN":
-        env_name = "../weights/combined_training_6_2_25"
+    
+    elif args.agent == "Pablo":
+        env_name = "../last_chance/"
         env = h_env.HockeyEnv()
-        h_env.HockeyEnv().seed(seed)
+      
 
         state_space = env.observation_space
 
@@ -83,7 +85,7 @@ def initialize_agent(agent_args: list[str]) -> Agent:
         else:
             action_space = env.discrete_action_space
 
-        agent = Previous_Combined_Agent(
+        agent = Adaptative_Dueling_Double_DQN(
             state_space,
             action_space,
             seed=seed,
@@ -94,58 +96,27 @@ def initialize_agent(agent_args: list[str]) -> Agent:
             use_more_actions=USE_MORE_ACTIONS,
             env=env,
         )
-        agent.Q.load(env_name, name=episode)
-
-    elif args.agent == "DDDQN":
-        env_name = "../weights/combined_training_6_2_25"
+        agent.Q.load(env_name, name="most_recent")
+    elif args.agent == "Combined":
+        env_name = "../weights/Noisy_Dueling_Double_DQN_n_step_4_adaptive"
         env = h_env.HockeyEnv()
-        h_env.HockeyEnv().seed(seed)
-
-        state_space = env.observation_space
-
-        if USE_MORE_ACTIONS:
-            action_space = spaces.Discrete(len(MORE_ACTIONS))
-        else:
-            action_space = env.discrete_action_space
-
-        agent = Previous_Combined_Agent(
-            state_space,
-            action_space,
+        agent = Adaptative_Dueling_Double_DQN_better_mem(
+            env.observation_space,
+            env.discrete_action_space,
             seed=seed,
             eps=0.01,
             learning_rate=0.0001,
             hidden_sizes=[256, 256],
-            n_steps=5,
             use_more_actions=USE_MORE_ACTIONS,
             env=env,
-        )
-        agent.Q.load(env_name, name=episode)
-    elif args.agent == "Combined_agent":
-        env_name = "../weights/Dueling_Double_DQN_Prio_n_step_5"
-        env = h_env.HockeyEnv()
-        h_env.HockeyEnv().seed(seed)
-
-        state_space = env.observation_space
-
-        if USE_MORE_ACTIONS:
-            action_space = spaces.Discrete(len(MORE_ACTIONS))
-        else:
-            action_space = env.discrete_action_space
-
-        agent = Combined_Agent(
-            state_space,
-            action_space,
-            env = env,
-            seed = seed,
-            use_eps_decay = False,
-            use_dueling = True,
-            use_double = True,
-            use_noisy = True,
+            use_noisy=True,
+            use_dueling=True,
+            use_double=True,
             use_prio = True,
-            n_step = args.n_step,
-            hidden_sizes = [256, 256]
+            n_step = 4,
         )
-        agent.Q.load(env_name, name=episode)
+        
+
     else:
         raise ValueError(f"Unknown agent: {args.agent}")
 
