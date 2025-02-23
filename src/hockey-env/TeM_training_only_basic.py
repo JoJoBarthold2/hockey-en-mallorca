@@ -1,6 +1,7 @@
 import os
 import time
 import copy
+import pickle
 import random
 import logging
 import argparse
@@ -160,8 +161,19 @@ if args.agent == "Prio_DQN":
     )
 
 if args.weights != "":
-    agent.Q.load(args.weights, name = args.weights_episode)   
-    env_name = f"{env_name}_pretrained_from_{args.weights}_{args.weights_episode}"
+    agent.Q.load(args.weights, name = args.weights_episode)
+    if agent._config["use_target_net"]:
+        agent.Q_target.load(args.weights, name = args.weights_episode)
+
+    test_state, _ = env.reset(seed = seed)
+    print("Q-values after loading:", agent.Q.maxQ(test_state))
+
+    try:
+        with open(f"{args.weights}/replay_buffer.pkl", "rb") as f:
+            agent.buffer = pickle.load(f)
+        print("Buffer cargado correctamente.")
+    except FileNotFoundError:
+        print("Buffer not found.")
 
 opponents = []
 opponents_names = []
@@ -187,7 +199,10 @@ if args.play_against_vales:
         env = env,
         use_more_actions = USE_MORE_ACTIONS,
     )
-    vales.Q.load("prio_agent_self_play_17_2_25")
+    vales.Q.load("hockey-en-mallorca/src/weights/prio_agent_self_play_17_2_25")
+    if vales._config["use_target_net"]:
+        vales.Q_target.load("hockey-en-mallorca/src/weights/prio_agent_self_play_17_2_25")
+    opponents.append(vales)
     opponents_names.append("Valentin")
 if args.selfplay:
     opponents.append(copy.deepcopy(agent))
@@ -207,8 +222,10 @@ epsilons = []
 if args.weights_for_selfplay != "":
     if not os.path.isdir(args.weights_for_selfplay):
         raise ValueError(f"\"{args.weights_for_selfplay}\" is not a valid path for weights_for_selfplay.")
-    exit
-    saved_weights = [f"_initial_{name}" for name in os.listdir(f"{args.weights_for_selfplay}/weights") if os.path.isdir(os.path.join(args.weights_for_selfplay, name))]
+    saved_weights = [
+        f"_initial_{name}".removesuffix(".pth") 
+        for name in os.listdir(f"{args.weights_for_selfplay}/weights")
+    ]
     logging.info(f"Loaded initial weights for selfplay: {saved_weights}")
 else:
     saved_weights = []
@@ -227,7 +244,7 @@ last_save_time = time.time()
 for episode in range(max_episodes):
 
     if args.selfplay and saved_weights == []:
-        elected = random.randint(0, len(opponents) - 2)
+        selected = random.randint(0, len(opponents) - 2)
     else:
         selected = random.randint(0, len(opponents) - 1)
     
@@ -237,7 +254,7 @@ for episode in range(max_episodes):
     if opponents_names[selected] == "Self_play":
         weights = random.choice(saved_weights)
         if weights.startswith("_initial_"):
-            opponent.Q.load(args.weights_for_selfplay, name = weights)
+            opponent.Q.load(args.weights_for_selfplay, name = weights.removeprefix("_initial_"))
         else:
             opponent.Q.load(env_name, name = weights)
 
@@ -326,6 +343,7 @@ for episode in range(max_episodes):
         sf.save_match_history(env_name, match_history)
         sf.plot_returns(stats, env_name)
         sf.plot_losses(losses, env_name)
+        sf.plot_match_evolution_by_chunks(env_name, match_history, opponents_names, games_to_play)
         #sf.plot_epsilon_evolution(env_name, epsilons)
 
     if (episode % 20 == 0) and episode > 0:  
