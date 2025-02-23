@@ -169,7 +169,7 @@ if args.weights != "":
     print("Q-values after loading:", agent.Q.maxQ(test_state))
 
     try:
-        with open(f"{args.weights}/weights/replay_buffer.pkl", "rb") as f:
+        with open(f"{args.weights}/replay_buffer.pkl", "rb") as f:
             agent.buffer = pickle.load(f)
         print("Buffer cargado correctamente.")
     except FileNotFoundError:
