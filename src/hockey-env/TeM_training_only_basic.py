@@ -186,7 +186,7 @@ if args.play_against_vales:
         env = env,
         use_more_actions = USE_MORE_ACTIONS,
     )
-    vales.Q.load("../weights/prio_agent_self_play_17_2_25")
+    vales.Q.load("hockey-en-mallorca/src/weights/prio_agent_self_play_17_2_25")
     opponents.append(vales)
     opponents_names.append("Valentin")
 if args.selfplay:
