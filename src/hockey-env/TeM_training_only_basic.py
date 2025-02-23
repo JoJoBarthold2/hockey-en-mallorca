@@ -199,7 +199,7 @@ if args.play_against_vales:
         env = env,
         use_more_actions = USE_MORE_ACTIONS,
     )
-    vales.Q.load("prio_agent_self_play_17_2_25")
+    vales.Q.load("hockey-en-mallorca/src/weights/prio_agent_self_play_17_2_25")
     if vales._config["use_target_net"]:
         vales.Q_target.load("prio_agent_self_play_17_2_25")
     opponents.append(vales)
