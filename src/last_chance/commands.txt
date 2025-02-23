@@ -1,0 +1,9 @@
+tmux
+cd src/hockey_env
+
+control + b d
+
+tmux
+cd src/hockey_env
+
+tmux attach-session -t 1

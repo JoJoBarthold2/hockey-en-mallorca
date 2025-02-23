@@ -28,7 +28,7 @@ parser.add_argument("--use_prio",action="store_true", help = "Use Prioritized Bu
 parser.add_argument("--n_step", type = int, default = 4, help = "Number of steps to look ahead")
 parser.add_argument("--env_description", type = str, default = "", help = "Additional description for env_name")
 parser.add_argument("--seed", type = int, default = 7489, help = "Seed for the training")
-parser.add_argument("--use_more_actions", type = str, default = "True", help = "Use more actions")
+parser.add_argument("--use_more_actions", type = str, default = "False", help = "Use more actions")
 parser.add_argument("--max_episodes", type = int, default = 10000, help = "Max number of episodes")
 parser.add_argument("--games_to_play", type = int, default = 50, help = "Number of games to play")
 parser.add_argument("--train_iterations", type = int, default = 32, help = "Number of training iterations")
@@ -56,7 +56,7 @@ SEED_TRAIN_1 = 7489
 SEED_TRAIN_2 = 1312
 seed = SEED_TRAIN_1
 
-USE_MORE_ACTIONS = True
+USE_MORE_ACTIONS = False
 
 random.seed(seed)
 if args.verbose == "True":
@@ -80,7 +80,7 @@ if use_prio:
 name_parts.append(f"n_step_{args.n_step}")
 name = "_".join(name_parts)
 
-env_name = f"{name}_{args.env_description}"
+env_name = f"../last_chance/{name}_{args.env_description}"
 logging.info(env_name)
 
 state_space = env.observation_space
@@ -115,7 +115,8 @@ if args.agent == "Adaptive" or args.agent == "adaptive" or args.agent == "Adapta
         use_dueling = use_dueling,
         use_double = use_double,
         use_noisy = use_noisy,
-        hidden_sizes = [256, 256]
+        hidden_sizes = [128, 128],
+        use_more_actions = False
     )
 
 if args.agent == "Adaptive_Combined":
