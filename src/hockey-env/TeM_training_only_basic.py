@@ -346,7 +346,7 @@ for episode in range(max_episodes):
         sf.plot_match_evolution_by_chunks(env_name, match_history, opponents_names, games_to_play)
         #sf.plot_epsilon_evolution(env_name, epsilons)
 
-    if (episode % 2 == 0) and episode > 0:  
+    if (episode % 20 == 0) and episode > 0:  
         sf.plot_match_evolution_by_chunks(env_name, match_history, opponents_names, games_to_play)
 
     if time.time() - last_save_time >= 600:  # 600 segundos = 10 minutos
