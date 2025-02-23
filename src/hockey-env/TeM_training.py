@@ -26,7 +26,7 @@ parser.add_argument("--use_prio",action="store_true", help = "Use Prioritized Bu
 parser.add_argument("--n_step", type = int, default = 4, help = "Number of steps to look ahead")
 parser.add_argument("--env_description", type = str, default = "", help = "Additional description for env_name")
 parser.add_argument("--seed", type = int, default = 7489, help = "Seed for the training")
-parser.add_argument("--use_more_actions", type = str, default = "True", help = "Use more actions")
+parser.add_argument("--normal_actions", action="store_false", help = " Don't Use more actions")
 parser.add_argument("--max_episodes", type = int, default = 10000, help = "Max number of episodes")
 parser.add_argument("--games_to_play", type = int, default = 50, help = "Number of games to play")
 parser.add_argument("--train_iterations", type = int, default = 32, help = "Number of training iterations")
@@ -46,7 +46,7 @@ SEED_TRAIN_1 = 7489
 SEED_TRAIN_2 = 1312
 seed = SEED_TRAIN_1
 
-USE_MORE_ACTIONS = True
+USE_MORE_ACTIONS =  args.normal_actions
 
 random.seed(seed)
 if args.verbose == "True":
@@ -156,56 +156,58 @@ if args.weights != "":
 opponent0 = RandomAgent(seed = seed)
 opponent1 = h_env.BasicOpponent()
 opponent2 = h_env.BasicOpponent(weak = False)
+
+
 opponent3 = Prio_DQN_Agent(
+            state_space,
+            spaces.Discrete(len(MORE_ACTIONS)),
+            seed = seed,
+            eps = 0.01,
+            learning_rate = 0.0001,
+            hidden_sizes = [256, 256],
+            n_steps = 4,
+            env = env,
+            use_more_actions = True,
+    )
+opponent3.Q.load("pure_prio_training_2_2_25", name = "episode_5000")
+
+opponent4 = Prio_DQN_Agent(
         state_space,
-        action_space,
+        spaces.Discrete(len(MORE_ACTIONS)),
         seed = seed,
         eps = 0.01,
         learning_rate = 0.0001,
         hidden_sizes = [256, 256],
         n_steps = 4,
         env = env,
-        use_more_actions = USE_MORE_ACTIONS,
-)
-opponent3.Q.load("pure_prio_training_2_2_25", name = "episode_5000")
-
-opponent4 = Prio_DQN_Agent(
-    state_space,
-    action_space,
-    seed = seed,
-    eps = 0.01,
-    learning_rate = 0.0001,
-    hidden_sizes = [256, 256],
-    n_steps = 4,
-    env = env,
-    use_more_actions = USE_MORE_ACTIONS,
-)
+        use_more_actions = True,
+    )
 opponent4.Q.load("pure_prio_training_2_2_25", name = "episode_7500")
 
 opponent5 = Previous_Combined_Agent(
-    state_space,
-    action_space,
-    seed = seed,
-    eps = 0.01,
-    learning_rate = 0.0001,
-    hidden_sizes = [256, 256],
-    n_steps = 4,
-    env = env,
-    use_more_actions = USE_MORE_ACTIONS,
-)
+        state_space,
+        spaces.Discrete(len(MORE_ACTIONS)),
+        seed = seed,
+        eps = 0.01,
+        learning_rate = 0.0001,
+        hidden_sizes = [256, 256],
+        n_steps = 4,
+        env = env,
+        use_more_actions = True,
+    )
 opponent5.Q.load("combined_training_6_2_25", name = "episode_5000")
 
 opponent6 = Previous_Combined_Agent(
-    state_space,
-    action_space,
-    seed = seed,
-    eps = 0.01,
-    learning_rate = 0.0001,
-    hidden_sizes = [256, 256],
-    n_steps = 4,
-    env = env,
-    use_more_actions = USE_MORE_ACTIONS,
-)
+        state_space,
+       spaces.Discrete(len(MORE_ACTIONS)),
+        seed = seed,
+        eps = 0.01,
+        learning_rate = 0.0001,
+        hidden_sizes = [256, 256],
+        n_steps = 4,
+        env = env,
+        use_more_actions = True,
+    )
 opponent6.Q.load("combined_training_6_2_25", name = "episode_7500")
 
 agent_copy = copy.deepcopy(agent)
@@ -230,6 +232,8 @@ opponents_names = [
     "Combined Agent_7500",
     "self_play",
 ]
+
+
 
 match_history = [[] for _ in opponents]
 
@@ -288,7 +292,7 @@ for episode in range(max_episodes):
 
             if opponents_names[selected] not in ["Random", "Weak", "NonWeak"]:
                 a2 = opponent.act(obs_agent2, eps = 0, validation = True)
-                if USE_MORE_ACTIONS:
+                if opponent.use_more_actions:
                     a2 = MORE_ACTIONS[a2]
                 else:
                     a2 = env.discrete_to_continous_action(a2)
