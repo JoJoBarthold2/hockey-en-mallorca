@@ -201,7 +201,7 @@ if args.play_against_vales:
     )
     vales.Q.load("hockey-en-mallorca/src/weights/prio_agent_self_play_17_2_25")
     if vales._config["use_target_net"]:
-        vales.Q_target.load("prio_agent_self_play_17_2_25")
+        vales.Q_target.load("hockey-en-mallorca/src/weights/prio_agent_self_play_17_2_25")
     opponents.append(vales)
     opponents_names.append("Valentin")
 if args.selfplay:
