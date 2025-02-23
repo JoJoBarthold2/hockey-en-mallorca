@@ -13,18 +13,18 @@ from Agents.utils.actions import MORE_ACTIONS
 
 logging.basicConfig(level=logging.INFO)
 
-parser = argparse.ArgumentParser(description = "Train Adaptative Dueling DDQN Agent.")
-parser.add_argument("--use_dueling", type = str, default = "True", help = "Use Dueling Network")
-parser.add_argument("--use_double", type = str, default = "True", help = "Use Double DQN")
-parser.add_argument("--use_noisy", type = str, default = "False", help = "Use Noisy Linear layers")
-parser.add_argument("--use_eps_decay", type = str, default = "False", help = "Use Epsilon Decay")
+parser = argparse.ArgumentParser(description = "Train Dueling DDQN Agent.")
+parser.add_argument("--use_dueling", action="store_true", help = "Use Dueling Network")
+parser.add_argument("--use_double", action="store_true", help = "Use Double DQN")
+parser.add_argument("--use_eps_decay", action="store_true", help = "Use Epsilon Decay")
+parser.add_argument("--use_noisy", action="store_true", help = "Use Noisy Net")
 parser.add_argument("--env_description", type = str, default = "", help = "Additional description for env_name")
 args = parser.parse_args()
 
-use_dueling = True if args.use_dueling == "True" else False
-use_double = True if args.use_double == "True" else False
-use_noisy = True if args.use_noisy == "True" else False
-use_eps_decay = True if args.use_eps_decay == "True" else False
+use_dueling = args.use_dueling
+use_double = args.use_double
+use_eps_decay = args.use_eps_decay
+use_noisy = args.use_noisy
 
 name_parts = []
 if use_noisy:
@@ -80,7 +80,7 @@ agent = Adaptative_Dueling_Double_DQN(
 stats = []
 losses = []
 
-max_episodes = 2000
+max_episodes = 20000
 max_steps = 3000
 train_iterations = 32  # Number of training steps per episode
 
