@@ -273,8 +273,8 @@ for episode in range(max_episodes):
 
     for game in range(games_to_play):
 
-        state, _ = env.reset(seed = seed)
-        env.action_space.seed(seed)
+        state, _ = env.reset()
+       
         obs_agent2 = env.obs_agent_two()
         total_reward = 0
 

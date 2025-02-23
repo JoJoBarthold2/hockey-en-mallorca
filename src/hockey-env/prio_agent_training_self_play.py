@@ -37,10 +37,10 @@ agent = Prio_DQN_Agent(
         eps=0.01,
         learning_rate=0.0001,
         hidden_sizes=[256, 256],
-        n_steps=10,
-        use_prio = True,
+        n_steps=1,
+        use_prio = False,
     )
   
-env_name = "prio_agent_self_play_23_02_25_n_step_10"
+env_name = "classic_dqn__agent_self_play_23_02_25"
 
 train_agent_self_play(agent = agent, use_more_actions = USE_MORE_ACTIONS, seed = SEED_TRAIN_1, env=env, env_name = env_name)

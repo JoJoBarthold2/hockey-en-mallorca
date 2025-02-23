@@ -142,6 +142,7 @@ def train_agent_self_play(
 
     for episode in range(max_episodes):
         logging.info("Memory usage: " + str(psutil.virtual_memory().percent))
+    
 
         if saved_weights != []:
             selected = random.randint(0, len(opponents) - 1)
@@ -156,7 +157,7 @@ def train_agent_self_play(
             opponent.Q.load(env_name, name=weights)
         for game in range(games_to_play):
 
-            state, _ = env.reset(seed=seed)
+            state, _ = env.reset()
             obs_agent2 = env.obs_agent_two()
             total_reward = 0
             t = 0
@@ -223,7 +224,7 @@ def train_agent_self_play(
                 stats.append([episode, total_reward, t + 1])
                 betas.append(agent.beta)
                 epsilons.append(agent._eps)
-                logging.debug(
+                logging.info(
                     f"Episode {episode+1}/{max_episodes}, Game {game+1}/{games_to_play} - Total Reward: {total_reward}, Beta: {agent.beta}"
                 )
 
@@ -231,6 +232,7 @@ def train_agent_self_play(
             agent._perform_epsilon_decay()
 
         if ((episode) % int(max_episodes / 20) == 0) and episode > 0:
+            logging.info("Saving weights")
             agent.Q.save(env_name, name=f"episode_{episode}")
             saved_weights.append(f"episode_{episode}")
             sf.save_betas(env_name, betas)
