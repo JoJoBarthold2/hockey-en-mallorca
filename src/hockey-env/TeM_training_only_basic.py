@@ -80,7 +80,7 @@ if use_prio:
 name_parts.append(f"n_step_{args.n_step}")
 name = "_".join(name_parts)
 
-env_name = f"../remake/{name}_{args.env_description}"
+env_name = f"{name}_{args.env_description}"
 logging.info(env_name)
 
 state_space = env.observation_space
