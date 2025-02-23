@@ -6,7 +6,7 @@ import hockey.hockey_env as h_env
 from Agents.utils.actions import MORE_ACTIONS
 from comprl.client import Agent, launch_client
 from Agents.Random.random_agent import RandomAgent
-from Agents.Tapas_en_Mallorca.Agent import Combined_Agent
+from Agents.Tapas_en_Mallorca.old.Agent import Combined_Agent
 from Agents.Prio_n_step.Prio_DQN_Agent import Prio_DQN_Agent
 from Agents.Combined_Agent_Double.Dueling_DDQN_Agent import Dueling_DDQN_Agent as Previous_Combined_Agent
 
