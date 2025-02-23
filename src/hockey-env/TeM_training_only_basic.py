@@ -80,7 +80,7 @@ if use_prio:
 name_parts.append(f"n_step_{args.n_step}")
 name = "_".join(name_parts)
 
-env_name = f"{name}_{args.env_description}"
+env_name = f"../remake/{name}_{args.env_description}"
 logging.info(env_name)
 
 state_space = env.observation_space
@@ -173,7 +173,7 @@ if args.weights != "":
             agent.buffer = pickle.load(f)
         print("Buffer cargado correctamente.")
     except FileNotFoundError:
-        print("No se encontró un buffer guardado, comenzando desde cero.")
+        print("Buffer not found.")
 
 opponents = []
 opponents_names = []
@@ -199,9 +199,9 @@ if args.play_against_vales:
         env = env,
         use_more_actions = USE_MORE_ACTIONS,
     )
-    vales.Q.load("../weights/prio_agent_self_play_17_2_25")
+    vales.Q.load("prio_agent_self_play_17_2_25")
     if vales._config["use_target_net"]:
-        vales.Q_target.load("../weights/prio_agent_self_play_17_2_25")
+        vales.Q_target.load("prio_agent_self_play_17_2_25")
     opponents.append(vales)
     opponents_names.append("Valentin")
 if args.selfplay:
