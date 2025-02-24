@@ -26,7 +26,7 @@ def train_agent_self_play(
     seed=7489,
     env=None,
     env_name="hockey_training",
-    max_episodes=10000,
+    max_episodes=2000,
     games_to_play=50,
     max_steps=300,
 ):
@@ -38,10 +38,9 @@ def train_agent_self_play(
 
     state_space = env.observation_space
 
-    if use_more_actions:
-        action_space = spaces.Discrete(len(MORE_ACTIONS))
-    else:
-        action_space = env.discrete_action_space
+    
+    action_space = spaces.Discrete(len(MORE_ACTIONS))
+   
 
     agent_copy = copy.deepcopy(agent)
 
@@ -139,7 +138,7 @@ def train_agent_self_play(
     time_start = time.time()  # Debugging
 
     saved_weights = []
-
+    last_save_time = time.time()
     for episode in range(max_episodes):
         logging.info("Memory usage: " + str(psutil.virtual_memory().percent))
     
@@ -183,7 +182,7 @@ def train_agent_self_play(
 
                 else:
                     a2 = opponent.act(obs_agent2)
-                    if use_more_actions:
+                    if agent.use_more_actions:
                         a2 = MORE_ACTIONS[a2]
                     else:
                         a2 = env.discrete_to_continous_action(a2)
@@ -201,7 +200,7 @@ def train_agent_self_play(
                 if agent.use_n_step:
                     one_step_transition = agent.n_buffer.add_transition(
                         (state, a1, reward, next_state, done)
-                    )
+                    ) #this also returns the one step transition
                 else:
                     one_step_transition = (state, a1, reward, next_state, done)
 
@@ -216,7 +215,7 @@ def train_agent_self_play(
                     break
             time_start = time.time()
             loss = agent.train(train_iterations)
-            logging.info(f"Training time: {time.time()-time_start}")
+            #logging.info(f"Training time: {time.time()-time_start}")
             match_history[selected].append(info["winner"])
             logging.debug(info["winner"])
 
@@ -235,6 +234,7 @@ def train_agent_self_play(
         if ((episode) % int(max_episodes / 20) == 0) and episode > 0:
             logging.info("Saving weights")
             agent.Q.save(env_name, name=f"episode_{episode}")
+            last_save_time = time.time()
             saved_weights.append(f"episode_{episode}")
             sf.save_betas(env_name, betas)
             sf.save_epsilons(env_name, epsilons)
@@ -247,6 +247,16 @@ def train_agent_self_play(
             sf.plot_match_evolution_by_chunks(
                 env_name, match_history, opponents_names, games_to_play
             )
+        if time.time() - last_save_time >= 600:  # 600 segundos = 10 minutos
+            agent.Q.save(env_name, name = "most_recent")
+            last_save_time = time.time()
+            sf.save_epsilons(env_name, epsilons)
+            sf.save_betas(env_name, betas)
+            sf.save_stats(env_name, stats, losses)
+            sf.save_match_history(env_name, match_history)
+            sf.plot_returns(stats, env_name)
+            sf.plot_losses(losses, env_name)
+            logging.info(f"Most recent weights saved at episode {episode}")
 
         logging.debug(f" time per frame: {(time.time()-time_start)/frame_idx}")
         logging.debug(f" mean sample time: {np.mean(agent.sample_times)}")

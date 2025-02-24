@@ -14,7 +14,7 @@ SEED_TRAIN_1 = 7489
 SEED_TRAIN_2 = 1312
 seed = SEED_TRAIN_1
 
-USE_MORE_ACTIONS = True
+USE_MORE_ACTIONS = False
 
 reload(h_env)
     
@@ -37,12 +37,12 @@ agent = Prio_DQN_Agent(
         eps=0.01,
         learning_rate=0.0001,
         hidden_sizes=[256, 256],
-        n_steps=2,
+        n_steps=4,
         use_prio = True,
-        alpha = 0.2,
-        beta=0.4
+        #alpha = 0.2,
+        #beta=0.4
     )
   
-env_name = "prio_agent_23_02_25_n_step_4_alpha_0.2_beta_0.4"
+env_name = "prio_agent_24_02_25_n_step_4_normal_actions"
 
 train_agent_self_play(agent = agent, use_more_actions = USE_MORE_ACTIONS, seed = SEED_TRAIN_1, env=env, env_name = env_name)
