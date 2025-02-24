@@ -131,6 +131,9 @@ class Adaptative_Dueling_Double_DQN_better_mem(Agent):
     def get_step(self, state):
 
         state = np.array(state)
+           
+        if self.use_noisy:
+            self.Q.reset_noise()
         action = self.Q.greedyAction(state).tolist()
 
         if self.use_more_actions:
