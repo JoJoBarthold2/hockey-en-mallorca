@@ -28,8 +28,8 @@ parser.add_argument("--use_prio",action="store_true", help = "Use Prioritized Bu
 parser.add_argument("--n_step", type = int, default = 4, help = "Number of steps to look ahead")
 parser.add_argument("--env_description", type = str, default = "", help = "Additional description for env_name")
 parser.add_argument("--seed", type = int, default = 7489, help = "Seed for the training")
-parser.add_argument("--use_more_actions", type = str, default = "False", help = "Use more actions")
-parser.add_argument("--max_episodes", type = int, default = 10000, help = "Max number of episodes")
+parser.add_argument("--use_more_actions", action="store_true", help = "Use more actions")
+parser.add_argument("--max_episodes", type = int, default = 5000, help = "Max number of episodes")
 parser.add_argument("--games_to_play", type = int, default = 50, help = "Number of games to play")
 parser.add_argument("--train_iterations", type = int, default = 32, help = "Number of training iterations")
 parser.add_argument("--verbose", action="store_true", help="Enable verbose mode")
@@ -51,12 +51,11 @@ use_double = args.use_double
 use_eps_decay = args.use_eps_decay
 use_prio = args.use_prio
 use_noisy = args.use_noisy_net
+use_more_actions = args.use_more_actions
 
 SEED_TRAIN_1 = 7489
 SEED_TRAIN_2 = 1312
 seed = SEED_TRAIN_1
-
-USE_MORE_ACTIONS = False
 
 random.seed(seed)
 if args.verbose == "True":
@@ -85,7 +84,7 @@ logging.info(env_name)
 
 state_space = env.observation_space
 
-if(USE_MORE_ACTIONS):
+if(use_more_actions):
     action_space = spaces.Discrete(len(MORE_ACTIONS))
 else: 
     action_space = env.discrete_action_space
@@ -115,8 +114,8 @@ if args.agent == "Adaptive" or args.agent == "adaptive" or args.agent == "Adapta
         use_dueling = use_dueling,
         use_double = use_double,
         use_noisy = use_noisy,
-        hidden_sizes = [128, 128],
-        use_more_actions = False
+        hidden_sizes = [256, 256],
+        use_more_actions = use_more_actions
     )
 
 if args.agent == "Adaptive_Combined":
@@ -158,7 +157,7 @@ if args.agent == "Prio_DQN":
         hidden_sizes = [256, 256],
         n_steps = 4,
         env = env,
-        use_more_actions = USE_MORE_ACTIONS,
+        use_more_actions = use_more_actions,
     )
 
 if args.weights != "":
@@ -198,7 +197,7 @@ if args.play_against_vales:
         hidden_sizes = [256, 256],
         n_steps = 4,
         env = env,
-        use_more_actions = USE_MORE_ACTIONS,
+        use_more_actions = use_more_actions,
     )
     vales.Q.load("hockey-en-mallorca/src/weights/prio_agent_self_play_17_2_25")
     if vales._config["use_target_net"]:
@@ -328,12 +327,12 @@ for episode in range(max_episodes):
         
         t += 1
 
-    if agent._config["use_eps_decay"] and episode > int(0.8 * max_episodes):
+    if agent._config["use_eps_decay"] and episode > int(0.5 * max_episodes):
         #epsilon_time = time.time()
         agent._perform_epsilon_decay()  
         #logging.debug(f" Epsilon decay time: {time.time()-epsilon_time}")
 
-    if ((episode) % int(max_episodes/20) == 0) and episode > 0:  
+    if ((episode) % int(max_episodes/25) == 0) and episode > 0:  
         agent.Q.save(env_name, name = f"episode_{episode}")
         saved_weights.append(f"episode_{episode}")
         sf.save_epsilons(env_name, epsilons)
@@ -344,7 +343,7 @@ for episode in range(max_episodes):
         sf.plot_returns(stats, env_name)
         sf.plot_losses(losses, env_name)
         sf.plot_match_evolution_by_chunks(env_name, match_history, opponents_names, games_to_play)
-        #sf.plot_epsilon_evolution(env_name, epsilons)
+        sf.plot_epsilon_evolution(env_name, epsilons)
 
     if (episode % 20 == 0) and episode > 0:  
         sf.plot_match_evolution_by_chunks(env_name, match_history, opponents_names, games_to_play)
@@ -371,5 +370,5 @@ sf.save_stats(env_name, stats, losses)
 sf.save_match_history(env_name, match_history)
 sf.plot_returns(stats, env_name)
 sf.plot_losses(losses, env_name)
-#sf.plot_epsilon_evolution(env_name, epsilons)
+sf.plot_epsilon_evolution(env_name, epsilons)
 sf.plot_match_evolution_by_chunks(env_name, match_history, opponents_names, games_to_play)

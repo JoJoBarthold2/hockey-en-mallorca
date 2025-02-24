@@ -86,10 +86,6 @@ class Adaptative_Dueling_Double_DQN(Agent):
 
     def get_step(self, state):
 
-        if self.use_noisy:
-            self.Q.reset_noise() 
-            return self.Q.greedyAction(state)
-
         state = np.array(state)
         action = self.Q.greedyAction(state).tolist()
 
