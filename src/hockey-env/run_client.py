@@ -97,7 +97,7 @@ def initialize_agent(agent_args: list[str]) -> Agent:
             env=env,
             use_noisy=False
         )
-        agent.Q.load(env_name, name="most_recent")
+        agent.Q.load(env_name)
     elif args.agent == "Combined":
         env_name = "../weights/Noisy_Dueling_Double_DQN_n_step_4_adaptive"
         env = h_env.HockeyEnv()
