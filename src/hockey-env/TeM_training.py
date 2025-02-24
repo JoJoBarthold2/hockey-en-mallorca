@@ -254,6 +254,7 @@ logging.info(f"Initialization time: {time.time()-initalization_time}")        # 
 
 time_start = time.time()        # Debugging
 last_save_time = time.time()
+beta_start = agent.beta  # Beta annealing parameters
 
 for episode in range(max_episodes):
 
@@ -283,7 +284,10 @@ for episode in range(max_episodes):
             
             frame_idx += 1
             done = False
-
+            
+            agent.beta = min(
+                    1.0, beta_start + frame_idx * (1.0 - beta_start) / beta_frames
+                )  # Smoother beta annealing
             a1 = agent.act(state)
             if(USE_MORE_ACTIONS):
                 a1_cont = MORE_ACTIONS[a1]

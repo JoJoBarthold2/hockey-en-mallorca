@@ -26,7 +26,7 @@ def train_agent_self_play(
     seed=7489,
     env=None,
     env_name="hockey_training",
-    max_episodes=2000,
+    max_episodes=10000,
     games_to_play=50,
     max_steps=300,
 ):
@@ -257,9 +257,11 @@ def train_agent_self_play(
             sf.plot_returns(stats, env_name)
             sf.plot_losses(losses, env_name)
             logging.info(f"Most recent weights saved at episode {episode}")
+            print(agent.buffer.size)
 
         logging.debug(f" time per frame: {(time.time()-time_start)/frame_idx}")
         logging.debug(f" mean sample time: {np.mean(agent.sample_times)}")
+        logging.info("normal_actions! ")
 
     agent.Q.save(env_name, name="training_finished")
     sf.save_betas(env_name, betas)
