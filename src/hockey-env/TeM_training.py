@@ -247,7 +247,7 @@ frame_idx = 0
 
 max_episodes = args.max_episodes # 10000 default
 games_to_play = args.games_to_play # 50 default
-
+beta_frames = max_episodes * 1000 
 train_iterations = args.train_iterations # 32 default
 
 logging.info(f"Initialization time: {time.time()-initalization_time}")        # Debugging
