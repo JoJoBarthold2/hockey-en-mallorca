@@ -111,7 +111,10 @@ if use_eps_decay:
     name_parts.append("eps_decay")
 name = "_".join(name_parts)
 
-env_name = f"../last_chance/Cartpole/{name}"
+if args.env_description == "":
+    env_name = f"../last_chance/Cartpole/{name}"
+else:
+    env_name = f"../last_chance/Cartpole/{name}_{args.env_description}"
 env = gym.make("CartPole-v1", render_mode = "rgb_array")
 if isinstance(env.action_space, spaces.Box):
     env = hc.DiscreteActionWrapper(env,5)
@@ -132,7 +135,8 @@ if args.agent == "Combined":
     use_noisy = use_noisy,
     use_prio = use_prio,
     n_step = args.n_step,
-    hidden_sizes = [256, 256]
+    hidden_sizes = [256, 256],
+    update_target_every = 20
 )
 
 if args.agent == "Adaptive" or args.agent == "adaptive" or args.agent == "Adaptative":
