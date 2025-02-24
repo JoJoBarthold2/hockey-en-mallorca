@@ -74,7 +74,7 @@ def initialize_agent(agent_args: list[str]) -> Agent:
 
     
     elif args.agent == "Pablo":
-        env_name = "../last_chance/"
+        env_name = "../last_chance/tournament_weights"
         env = h_env.HockeyEnv()
       
 
@@ -95,6 +95,7 @@ def initialize_agent(agent_args: list[str]) -> Agent:
             n_steps=5,
             use_more_actions=USE_MORE_ACTIONS,
             env=env,
+            use_noisy=False
         )
         agent.Q.load(env_name, name="most_recent")
     elif args.agent == "Combined":
