@@ -34,6 +34,7 @@ parser.add_argument("--verbose", action="store_true", help="Enable verbose mode"
 parser.add_argument("--agent", type = str, default = "Adaptive_Combined", help = "Agent to use", choices = ["Combined", "Adaptive", "Previous_Combined_Agent", "Prio_DQN", "Adaptive_Combined", "adaptive", "Adaptative"])
 parser.add_argument("--weights", type = str, default = "", help = "Folder from which  to load weights")
 parser.add_argument("--weights_episode", type = str, default ="", help = "Episode of the weights to load")
+parser.add_argument("--learning_rate", type = float, default = 0.0003, help = "Learning rate for the agent")
 args = parser.parse_args()
 
 use_dueling = args.use_dueling
