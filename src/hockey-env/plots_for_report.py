@@ -95,8 +95,8 @@ def plot_winrate(agents, name, opponent_name, opponent_idx, chunk_size=200, game
 
 
 
-plot_rewards([(tournament_agent_path, "4 Steps"),(n_step_6_path, "6 Steps"),(n_step_1_path, "1 Step") ], episodes = int(5000), name = "rewards_n_steps")
-plot_rewards([(prio_alpha_04, "Alpha:0.4 Beta:0.6"),(prio_alpha_02_beta_04, "Alpha:0.2 Beta:0.4"), (tournament_agent_path, "Alpha:0.2 Beta:0.6"), (classic_dqn, "DQN") ], episodes = int(1500), name = "rewards_alpha_beta")
+plot_rewards([(tournament_agent_path, "4 Steps"),(n_step_6_path, "6 Steps"),(n_step_1_path, "1 Step"), ], episodes = int(5000), name = "rewards_n_steps")
+plot_rewards([(tournament_agent_path, "Alpha:0.2 Beta:0.6"),(prio_alpha_04, "Alpha:0.4 Beta:0.6"), (classic_dqn, "DQN"),(prio_alpha_02_beta_04, "Alpha:0.2 Beta:0.4") ], episodes = int(1500), name = "rewards_alpha_beta")
 plot_rewards([(tournament_agent_path, "4 N steps with PER "),(no_prio_n_4, "4 N steps without PER"), (classic_dqn, "DQN")], episodes = int(2000), name = "rewards_no_prio")
 
 plot_rewards([(tournament_agent_path, "PER + 4-Step"),(Combined_n_4, "Combined"), (classic_dqn, "DQN")], episodes = int(2000), name = "rewards_vs_weak")
@@ -104,7 +104,7 @@ plot_rewards([(Combined_n_4,"50 games"),(Combined_n_4_ten_games, "10 games")], e
 
 plot_rewards([(bigger_lr, "bigger_lr"),(bigger_nn, "bigger_nn"), (Combined_n_4, "Combined_n_4")], episodes = int(2000), name = "rewards_bigger_lr_nn")
 
-plot_winrate([(tournament_agent_path, "4 Steps"),(n_step_6_path, "6 Steps"),(n_step_1_path, "1 Step") ], opponent_name=  "Weak", opponent_idx = 1, name = "win_rate_n_steps")
+plot_winrate([(tournament_agent_path, "4 Steps"),(n_step_6_path, "6 Steps"), (classic_dqn, "DQN"),(n_step_1_path, "1 Step") ], opponent_name=  "Weak", games = 10000, opponent_idx = 1, name = "win_rate_n_steps")
 plot_winrate([(tournament_agent_path, "Alpha:0.2 Beta:0.6"),(prio_alpha_04,  "Alpha:0.4 Beta:0.6"),(prio_alpha_02_beta_04,  "Alpha:0.2 Beta:0.4"),  (classic_dqn, "DQN") ], games = 10000, opponent_name=  "Weak", opponent_idx = 1, name = "win_rate_alpha_beta")
 plot_winrate([(tournament_agent_path, "PER + 4-Step"),(Combined_n_4, "Combined"), (classic_dqn, "DQN")], opponent_name=  "Weak", opponent_idx = 1, name = "win_rate_vs_weak", games = 12000)
 plot_winrate([(Combined_n_4,"50 games"),(Combined_n_4_ten_games, "10 games")], opponent_name=  "Weak", opponent_idx = 1, name = "win_rate_combined_vs_ten_games", games=8000)
