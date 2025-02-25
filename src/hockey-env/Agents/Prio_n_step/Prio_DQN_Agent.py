@@ -44,7 +44,7 @@ class Prio_DQN_Agent(Agent):
             "discount": 0.95,
             "buffer_size": int(1e5),
             "batch_size": 64,  # Before, Pablo had 256 default
-            "learning_rate": 0.0002,
+            "learning_rate": 0.0001,
             "update_target_every": 20,
             "use_target_net": True,
             "use_eps_decay": False,
