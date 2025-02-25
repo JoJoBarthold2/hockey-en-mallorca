@@ -34,7 +34,7 @@ parser.add_argument("--verbose", action="store_true", help="Enable verbose mode"
 parser.add_argument("--agent", type = str, default = "Adaptive_Combined", help = "Agent to use", choices = ["Combined", "Adaptive", "Previous_Combined_Agent", "Prio_DQN", "Adaptive_Combined", "adaptive", "Adaptative"])
 parser.add_argument("--weights", type = str, default = "", help = "Folder from which  to load weights")
 parser.add_argument("--weights_episode", type = str, default ="", help = "Episode of the weights to load")
-parser.add_argument("--learning_rate", type = float, default = 0.0003, help = "Learning rate for the agent")
+parser.add_argument("--learning_rate", type = float, default = 0.0001, help = "Learning rate for the agent")
 args = parser.parse_args()
 
 use_dueling = args.use_dueling
@@ -93,7 +93,8 @@ if args.agent == "Combined":
     use_noisy = use_noisy,
     use_prio = use_prio,
     n_step = args.n_step,
-    hidden_sizes = [256, 256]
+    hidden_sizes = [256, 256],
+    learning_rate = args.learning_rate
 )
 
 if args.agent == "Adaptive" or args.agent == "adaptive" or args.agent == "Adaptative":
@@ -106,7 +107,8 @@ if args.agent == "Adaptive" or args.agent == "adaptive" or args.agent == "Adapta
         use_dueling = use_dueling,
         use_double = use_double,
         use_noisy = use_noisy,
-        hidden_sizes = [256, 256]
+        hidden_sizes = [256, 256],
+        learning_rate = args.learning_rate
     )
 
 if args.agent == "Adaptive_Combined":
@@ -121,7 +123,8 @@ if args.agent == "Adaptive_Combined":
         use_noisy = use_noisy,
         use_prio = use_prio,
         n_step = args.n_step,
-        hidden_sizes = [256, 256]
+        hidden_sizes = [256, 256],
+        learning_rate = args.learning_rate
     )
 
 if args.agent == "Previous_Combined_Agent":
@@ -144,7 +147,7 @@ if args.agent == "Prio_DQN":
         action_space,
         seed = seed,
         eps = 0.01,
-        learning_rate = 0.0001,
+        learning_rate = args.learning_rate,
         hidden_sizes = [256, 256],
         n_steps = 4,
         env = env,
