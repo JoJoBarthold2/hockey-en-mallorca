@@ -35,6 +35,7 @@ parser.add_argument("--agent", type = str, default = "Adaptive_Combined", help =
 parser.add_argument("--weights", type = str, default = "", help = "Folder from which  to load weights")
 parser.add_argument("--weights_episode", type = str, default ="", help = "Episode of the weights to load")
 parser.add_argument("--learning_rate", type = float, default = 0.0001, help = "Learning rate for the agent")
+parser.add_argument("--neural_net", type=list, default = [256, 256], help = "Neural net configuration")
 args = parser.parse_args()
 
 use_dueling = args.use_dueling
@@ -93,7 +94,7 @@ if args.agent == "Combined":
     use_noisy = use_noisy,
     use_prio = use_prio,
     n_step = args.n_step,
-    hidden_sizes = [256, 256],
+    hidden_sizes = args.neural_net,
     learning_rate = args.learning_rate
 )
 

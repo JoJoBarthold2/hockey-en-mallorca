@@ -65,5 +65,8 @@ def plot_rewards(agents_names, episodes = 5000, name = "rewards"):
 
 
 plot_rewards([(tournament_agent_path, "n_step_4"),(n_step_6_path, "n_step_6"),(n_step_1_path, "n_step_1") ], episodes = int(5000), name = "rewards_n_steps")
-plot_rewards([(prio_alpha_04, "alpha_0.4_beta_06"),(prio_alpha_02_beta_04, "alpha_0.2_beta_0.4"),(no_prio_n_4, "no_prio_n_4"), (tournament_agent_path, "alpha_02_beta_06") ], episodes = int(1500), name = "rewards_alpha_beta")
+plot_rewards([(prio_alpha_04, "alpha_0.4_beta_06"),(prio_alpha_02_beta_04, "alpha_0.2_beta_0.4"),(no_prio_n_4, "no_prio_n_4"), (tournament_agent_path, "alpha_02_beta_06"), (classic_dqn, "classic dqn") ], episodes = int(1500), name = "rewards_alpha_beta")
+
+plot_rewards([(Combined_n_4, "Combined_n_4"),(tournament_agent_path, "prioritized"), (classic_dqn, "dqn")], episodes = int(2000), name = "rewards_vs_combined")
+plot_rewards([(Combined_n_4,"50 games"),(Combined_n_4_ten_games, "10 games")], episodes = int(2000), name = "rewards_combined_vs_ten_games")
 
