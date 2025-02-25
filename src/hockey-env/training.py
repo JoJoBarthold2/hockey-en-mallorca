@@ -140,6 +140,7 @@ def train_agent_self_play(
     saved_weights = []
     last_save_time = time.time()
     for episode in range(max_episodes):
+        
         logging.info("Memory usage: " + str(psutil.virtual_memory().percent))
     
 
