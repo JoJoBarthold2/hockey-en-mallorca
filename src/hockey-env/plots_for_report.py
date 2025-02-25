@@ -43,7 +43,7 @@ bigger_lr = "../weights/Noisy_Dueling_Double_DQN_Prio_n_step_4_lr_0.0005"
 bigger_nn = "../weights/Noisy_Dueling_Double_DQN_Prio_n_step_4_bigger_nn"
 plots_dir = "../../plots"
 def plot_rewards(agents_names, episodes = 5000, name = "rewards"):
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(4, 3))
     for path,agent_name in agents_names:
         stats,_ = load_stats(path)
         #np_rewards =np.array([s[1] for s in stats])  
@@ -65,6 +65,7 @@ def plot_rewards(agents_names, episodes = 5000, name = "rewards"):
     plt.title('Rewards over episodes')
     save_path = os.path.join(plots_dir, f"{name}.png")
     plt.legend()
+    plt.tight_layout()
     plt.savefig(save_path)
     print(f"Plot saved at {save_path}")
     
@@ -72,7 +73,7 @@ def plot_rewards(agents_names, episodes = 5000, name = "rewards"):
 
 
 def plot_winrate(agents, name, opponent_name, opponent_idx, chunk_size=200, games = 30000):	
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(4, 3))
     for path,agent_name in agents:
         match_history = load_match_history(path)
         match_history = match_history[opponent_idx][:games]
@@ -85,6 +86,7 @@ def plot_winrate(agents, name, opponent_name, opponent_idx, chunk_size=200, game
     plt.title(f'Win rate over {opponent_name}')
     plt.legend()
     save_path = os.path.join(plots_dir, f"{name}.png")
+    plt.tight_layout()
     plt.savefig(save_path)
     print(f"Plot saved at {save_path}")
         
