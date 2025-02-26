@@ -111,7 +111,7 @@ plot_winrate([(Combined_n_4,"50 games"),(Combined_n_4_ten_games, "10 games")], o
 plot_winrate([(bigger_lr, "bigger_lr"),(bigger_nn, "bigger_nn"), (Combined_n_4, "Combined_n_4")], opponent_name=  "Weak", opponent_idx = 1, name = "win_rate_bigger_lr_nn")
 
 
-plot_winrate([(tournament_agent_path, "PER + 4-Step"),(Combined_n_4, "Combined"), (classic_dqn, "DQN")], opponent_name=  "Strong", opponent_idx = 2, name = "win_rate_vs_strong", games = 12000)
+plot_winrate([(tournament_agent_path, "PER + 4-Step"),(Combined_n_4, "Combined"), (classic_dqn, "DQN"), (bigger_nn, "bigger nn")], opponent_name=  "Strong", opponent_idx = 2, name = "win_rate_vs_strong", games = 12000)
 
-plot_winrate([(tournament_agent_path, "PER + 4-Step"),(Combined_n_4, "Combined"), (classic_dqn, "DQN")], opponent_name=  "Combined", opponent_idx = 5, name = "win_rate_vs_combined", games = 12000)
+plot_winrate([(tournament_agent_path, "PER + 4-Step"),(Combined_n_4, "Combined"), (classic_dqn, "DQN"), (bigger_nn, "bigger nn")], opponent_name=  "Combined", opponent_idx = 5, name = "win_rate_vs_combined", games = 12000)
 
