@@ -62,7 +62,7 @@ def plot_rewards(agents_names, episodes = 5000, name = "rewards"):
         plt.plot(running_mean(plotted_rewards, 100), label=agent_name)
     plt.xlabel('Episode')
     plt.ylabel('Rewards')
-    plt.title('Rewards over episodes')
+    plt.title("")
     save_path = os.path.join(plots_dir, f"{name}.png")
     plt.legend()
    
@@ -84,7 +84,7 @@ def plot_winrate(agents, name, opponent_name, opponent_idx, chunk_size=200, game
         plt.plot(running_means, label=agent_name)
     plt.xlabel(f'Games played against {opponent_name}')
     plt.ylabel('Win rate')
-    plt.title(f'Win rate over {opponent_name}')
+    plt.title("")
     plt.legend()
     save_path = os.path.join(plots_dir, f"{name}.png")
     plt.tight_layout()
@@ -106,7 +106,7 @@ plot_rewards([(bigger_lr, "bigger_lr"),(bigger_nn, "bigger_nn"), (Combined_n_4, 
 
 plot_winrate([(tournament_agent_path, "4 Steps"),(n_step_6_path, "6 Steps"), (classic_dqn, "DQN"),(n_step_1_path, "1 Step") ], opponent_name=  "Weak", games = 10000, opponent_idx = 1, name = "win_rate_n_steps")
 plot_winrate([(tournament_agent_path, "Alpha:0.2 Beta:0.6"),(prio_alpha_04,  "Alpha:0.4 Beta:0.6"), (classic_dqn, "DQN"),(prio_alpha_02_beta_04,  "Alpha:0.2 Beta:0.4") ], games = 10000, opponent_name=  "Weak", opponent_idx = 1, name = "win_rate_alpha_beta")
-plot_winrate([(tournament_agent_path, "PER + 4-Step"),(Combined_n_4, "Combined"), (classic_dqn, "DQN")], opponent_name=  "Weak", opponent_idx = 1, name = "win_rate_vs_weak", games = 12000)
+plot_winrate([(tournament_agent_path, "PER + 4-Step"),(Combined_n_4, "Combined"), (classic_dqn, "DQN"),(bigger_nn, "bigger nn")], opponent_name=  "Weak", opponent_idx = 1, name = "win_rate_vs_weak", games = 12000)
 plot_winrate([(Combined_n_4,"50 games"),(Combined_n_4_ten_games, "10 games")], opponent_name=  "Weak", opponent_idx = 1, name = "win_rate_combined_vs_ten_games", games=8000)
 plot_winrate([(bigger_lr, "bigger_lr"),(bigger_nn, "bigger_nn"), (Combined_n_4, "Combined_n_4")], opponent_name=  "Weak", opponent_idx = 1, name = "win_rate_bigger_lr_nn")
 
