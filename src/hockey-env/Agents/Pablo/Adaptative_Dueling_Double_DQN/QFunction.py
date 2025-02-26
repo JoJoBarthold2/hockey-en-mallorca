@@ -33,7 +33,7 @@ class QFunction(Feedforward):
         # Backward pass
         loss.backward()
 
-        torch.nn.utils.clip_grad_norm_(self.parameters(), max_norm = 1.0)
+        torch.nn.utils.clip_grad_norm_(self.parameters(), max_norm = 10.0)
 
         self.optimizer.step()
         return loss.item()
@@ -44,7 +44,8 @@ class QFunction(Feedforward):
     def maxQ(self, states):
 
         if self.use_dueling:
-            q_values = self.forward(torch.tensor(states, dtype = torch.float32))
+            with torch.no_grad():
+                q_values = self.forward(torch.tensor(states, dtype=torch.float32))
             return torch.max(q_values, dim = -1, keepdim = True)[0].detach().numpy()
         else:
             return np.max(self.predict(states), axis = -1, keepdims = True)
