@@ -57,7 +57,7 @@ class Dueling_DDQN_Agent(Agent):
             "advantage_hidden_sizes": None,
             "prioritized_replay_eps": 1e-6,
         }
-
+        self.n_gamma = self._config["discount"] ** n_steps
         self._config.update(userconfig)
 
         random.seed(self._config["seed"])
@@ -254,7 +254,7 @@ class Dueling_DDQN_Agent(Agent):
                     n_done = np.stack(n_step_data[:, 4])[:, None]
                     n_td_target = (
                         n_rew
-                        + self._config["discount"]
+                        + self.n_gamma
                         * (1.0 - n_done)
                         * n_v_prime.detach().numpy()
                     )

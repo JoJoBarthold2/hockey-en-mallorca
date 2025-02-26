@@ -57,6 +57,7 @@ class Prio_DQN_Agent(Agent):
         }
 
         self._config.update(userconfig)
+        self.n_discount = self._config["discount"] ** n_steps
 
         random.seed(self._config["seed"])
         np.random.seed(self._config["seed"])
@@ -257,7 +258,7 @@ class Prio_DQN_Agent(Agent):
 
                     n_done = np.stack(n_step_data[:, 4])[:, None]
                     n_td_target = (
-                        n_rew + self._config["discount"] * (1.0 - n_done) * n_v_prime
+                        n_rew +self.n_discount * (1.0 - n_done) * n_v_prime
                     )
                     if self.use_prio:
                         fit_loss, elementwise_loss = self.Q.fit(
