@@ -46,7 +46,7 @@ class QFunction(Feedforward):
         if weights is not None:
             loss = (elementwise_loss * torch.from_numpy(weights).float()).mean()
         else:
-            loss = elementwise_loss.mean() #
+            loss = elementwise_loss.mean() 
             
 
         loss.backward()

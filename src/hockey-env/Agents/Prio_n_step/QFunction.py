@@ -36,14 +36,14 @@ class QFunction(Feedforward):
         n_step_targets=None,
     ):
 
-        self.train()  # put model in training mode
+        self.train()  
         self.optimizer.zero_grad()
 
-        # Forward pass
+        
         acts = torch.from_numpy(actions)
         pred = self.Q_value(torch.from_numpy(states).float(), acts)
 
-        # Compute Loss
+   
         elementwise_loss = self.loss(pred, torch.from_numpy(targets).float())
 
         if n_step_obs is not None:
@@ -55,7 +55,7 @@ class QFunction(Feedforward):
             )
             elementwise_loss = elementwise_loss + n_elementwise_loss
 
-        # Backward pass
+        
         loss = (elementwise_loss * torch.from_numpy(weights).float()).mean()
         loss.backward()
 
