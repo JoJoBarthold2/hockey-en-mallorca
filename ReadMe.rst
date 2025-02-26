@@ -1,4 +1,4 @@
-Rainbow is all you need
+Rainbow is all you need - Tapas en Mallorca
 =========================
 
 This repo is part of the Wintersemester course `Reinforcement Learning <https://uni-tuebingen.de/de/271554>` in the University of Tübingen.
