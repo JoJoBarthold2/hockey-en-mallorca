@@ -10,7 +10,6 @@ import hockey.hockey_env as h_env
 import Agents.utils.stats_functions as sf
 from Agents.utils.actions import MORE_ACTIONS
 from Agents.Random.random_agent import RandomAgent
-from Agents.Tapas_en_Mallorca.old.Agent import Combined_Agent
 from Agents.Prio_n_step.Prio_DQN_Agent import Prio_DQN_Agent
 from Agents.Combined_Agent_Double.Dueling_DDQN_Agent import Dueling_DDQN_Agent as Previous_Combined_Agent
 from Agents.Pablo.Adaptative_Dueling_Double_DQN.Agent import Adaptative_Dueling_Double_DQN
@@ -80,20 +79,7 @@ if(USE_MORE_ACTIONS):
 else: 
     action_space = env.discrete_action_space
 
-if args.agent == "Combined":
-    agent = Combined_Agent(
-    state_space,
-    action_space,
-    env = env,
-    seed = seed,
-    use_eps_decay = use_eps_decay,
-    use_dueling = use_dueling,
-    use_double = use_double,
-    use_noisy = use_noisy,
-    use_prio = use_prio,
-    n_step = args.n_step,
-    hidden_sizes = [256, 256]
-)
+
 
 if args.agent == "Adaptive" or args.agent == "adaptive" or args.agent == "Adaptative":
     agent = Adaptative_Dueling_Double_DQN(

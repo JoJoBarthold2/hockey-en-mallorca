@@ -8,8 +8,7 @@ import Agents.utils.prioritized_replay_buffer as prio_mem
 import Agents.utils.n_step_replay_buffer as n_step_mem
 from Agents.utils.actions import MORE_ACTIONS
 from Agents.Tapas_en_Mallorca.Adaptative_Dueling_Double_DQN.QFunction import QFunction
-import logging
-import time
+
 
 class Adaptative_Dueling_Double_DQN_better_mem(Agent):
 
@@ -29,7 +28,7 @@ class Adaptative_Dueling_Double_DQN_better_mem(Agent):
             "eps": 0.05,
             "discount": 0.95,
             "buffer_size": int(1e5),
-            "batch_size": 64,  # Before, 256 default
+            "batch_size": 64,  
             "learning_rate": 0.0002,
             "update_target_every": 5,
             "use_target_net": True,
@@ -187,13 +186,13 @@ class Adaptative_Dueling_Double_DQN_better_mem(Agent):
             
             if self.buffer.size > self._config["batch_size"]:
                 if self._config["use_prio"]:
-                    #time_sample = time.time()
+                  
                     data, indices, weights = self.buffer.sample(batch = self._config["batch_size"], beta = self.beta)
-                    #logging.info(f"Sample took {time.time() - time_sample:.2f} seconds.")
+                  
                 else:   
-                    #time_sample = time.time()
+                  
                     data = self.buffer.sample(batch = self._config["batch_size"])
-                    #logging.info(f"Sample took {time.time() - time_sample:.2f} seconds.")
+                  
                 s = np.stack(data[:, 0])                # Current state (s_t)
                 a = np.stack(data[:, 1])                # Action taken (a_t)
                 rew = np.stack(data[:, 2])[:, None]     # Reward received (r)
@@ -203,17 +202,17 @@ class Adaptative_Dueling_Double_DQN_better_mem(Agent):
                 # Double DQN
                 if self.use_double:
                     if self._config["use_target_net"]:
-                        a_prime = self.Q.greedyAction(s_prime)      # Get best action using Q network
+                        a_prime = self.Q.greedyAction(s_prime)     
                         s_prime_tensor = torch.tensor(s_prime, dtype=torch.float32)
                         a_prime_tensor = torch.tensor(a_prime, dtype=torch.int64)
                         v_prime = self.Q_target.Q_value(s_prime_tensor, a_prime_tensor)     # Evaluate it using Q_target
                     else:
-                        a_prime = self.Q.greedyAction(s_prime)      # Get best action using Q network
+                        a_prime = self.Q.greedyAction(s_prime)  
                         s_prime_tensor = torch.tensor(s_prime, dtype=torch.float32) # We need torch here for the Q_value function
                         a_prime_tensor = torch.tensor(a_prime, dtype=torch.int64)
                         v_prime = self.Q.Q_value(s_prime_tensor, a_prime_tensor)
 
-                    # target                                              
+                                                                
                     td_target = rew + self._config["discount"] * (1.0 - done) * v_prime.detach().numpy()
                 else:
                     if self._config["use_target_net"]:
@@ -221,7 +220,7 @@ class Adaptative_Dueling_Double_DQN_better_mem(Agent):
                     else:
                         v_prime = self.Q.maxQ(s_prime)
 
-                    # target                                              
+                                                                
                     td_target = rew + self._config["discount"] * (1.0 - done) * v_prime
                 
                 if self.use_n_step:
@@ -239,15 +238,15 @@ class Adaptative_Dueling_Double_DQN_better_mem(Agent):
                     n_s_prime = np.stack(n_step_data[:, 3])
                     n_done = np.stack(n_step_data[:, 4])[:, None]
 
-                    if self._config["use_double"]:     # Double DQN
+                    if self._config["use_double"]:     
                        
                         if self._config["use_target_net"]:
-                            n_a_prime = self.Q.greedyAction(n_s_prime)      # Get best action using Q network
+                            n_a_prime = self.Q.greedyAction(n_s_prime)  
                             n_s_prime_tensor = torch.tensor(n_s_prime, dtype = torch.float32)
                             n_a_prime_tensor = torch.tensor(n_a_prime, dtype = torch.int64)
                             n_v_prime = self.Q_target.Q_value(n_s_prime_tensor, n_a_prime_tensor)     # Evaluate it using Q_target
                         else:
-                            n_a_prime = self.Q.greedyAction(n_s_prime)      # Get best action using Q network
+                            n_a_prime = self.Q.greedyAction(n_s_prime)      
                             n_s_prime_tensor = torch.tensor(n_s_prime, dtype = torch.float32)
                             n_a_prime_tensor = torch.tensor(n_a_prime, dtype = torch.int64)
                             n_v_prime = self.Q.Q_value(n_s_prime_tensor, n_a_prime_tensor) 
@@ -263,7 +262,7 @@ class Adaptative_Dueling_Double_DQN_better_mem(Agent):
                         else:
                             n_v_prime = self.Q.maxQ(n_s_prime)
 
-                        # Target
+                       
                         n_td_target = n_rew + self.n_gamma * (1.0 - n_done) * n_v_prime
 
                     if self.use_prio:
@@ -289,18 +288,18 @@ class Adaptative_Dueling_Double_DQN_better_mem(Agent):
                         )
 
                 elif self.use_prio and not self.use_n_step:
-                        #fit_time = time.time()
+                     
                         fit_loss, elementwise_loss = self.Q.fit(s, a, td_target, weights)
-                        #logging.debug(f"Fit took {time.time() - fit_time:.2f} seconds.")
+                    
                         priorities = elementwise_loss + self.priority_eps
-                        #prio_time = time.time()
+                      
                         self.buffer.update_priorities(indices, priorities)
-                        #logging.debug(f"Prioritized update took {time.time() - prio_time:.2f} seconds.")
+                   
 
                 else:
-                    #fit_time = time.time()
+                  
                     fit_loss, _ = self.Q.fit(s, a, td_target)
-                    #logging.debug(f"Fit took {time.time() - fit_time:.2f} seconds.")
+                 
 
                 losses.append(fit_loss)
                 

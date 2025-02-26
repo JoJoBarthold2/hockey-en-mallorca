@@ -44,7 +44,7 @@ class Prio_DQN_Agent(Agent):
             "eps": 0.05,
             "discount": 0.95,
             "buffer_size": int(1e5),
-            "batch_size": 64,  # Before, Pablo had 256 default
+            "batch_size": 64,  
             "learning_rate": 0.0002,
             "update_target_every": 20,
             "use_target_net": True,
@@ -118,14 +118,14 @@ class Prio_DQN_Agent(Agent):
             self.Q_target = QFunction_prio(
                 state_dim=self._state_space.shape[0],
                 action_dim=self._action_n,
-                learning_rate=0,  # We do not want to train the Target Function, only copy the weights of the Q Network
+                learning_rate=0,  
                 hidden_sizes=self._config["hidden_sizes"],
             )
         else:
             self.Q_target = QFunction(
                 state_dim=self._state_space.shape[0],
                 action_dim=self._action_n,
-                learning_rate=0,  # We do not want to train the Target Function, only copy the weights of the Q Network
+                learning_rate=0,  
                 hidden_sizes=self._config["hidden_sizes"],
             )
         self._update_target_net()
@@ -137,7 +137,7 @@ class Prio_DQN_Agent(Agent):
         self.Q_target.load_state_dict(self.Q.state_dict())
 
 
-    def act(self, state, eps = None, validation = False):  # Fuction to be consistent with naming for self-play
+    def act(self, state, eps = None, validation = False):  # Function to be consistent with naming for self-play
         return self.perform_greedy_action(state, eps=0)
 
     def get_step(self, state):
@@ -174,7 +174,7 @@ class Prio_DQN_Agent(Agent):
             action = self.Q.greedyAction(state)
         else:
             action = self._action_space.sample()
-        # print(f"action: {action}, shape: {np.asarray(action).shape}")
+      
         return action
 
     def _perform_epsilon_decay(self):
@@ -201,9 +201,9 @@ class Prio_DQN_Agent(Agent):
 
             if self.buffer.size > self._config["batch_size"]:
 
-                # Sample from the replay buffer
+               
 
-                start_time = time.time()  # Debugging
+                start_time = time.time()  
                 if self.use_prio:
                     data, indices, weights = self.buffer.sample(
                     batch=self._config["batch_size"], beta=self.beta
@@ -227,11 +227,11 @@ class Prio_DQN_Agent(Agent):
                     v_prime = self.Q_target.maxQ(s_prime)
                 else:
                     v_prime = self.Q.maxQ(s_prime)
-                # Target
+               
 
                 td_target = rew + self._config["discount"] * (1.0 - done) * v_prime
 
-       ################
+    
 
                 # Optimize the lsq objective
 
