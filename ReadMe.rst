@@ -2,7 +2,7 @@ Rainbow is all you need
 =========================
 
 This repo is part of the Wintersemester course `Reinforcement Learning <https://uni-tuebingen.de/de/271554>` in the University of Tübingen.
-It implents several Reinforcement Learning Agents that are trained to play on the Gym Environment  `HockeyEnv <https://github.com/martius-lab/hockey-env>`_
+It implents several Reinforcement Learning Agents that are trained to play on the Gym Environment  `HockeyEnv <https://github.com/martius-lab/hockey-env>`.
 
 Most agents beat the deterministic agents.
 
