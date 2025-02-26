@@ -8,7 +8,7 @@ It implents several Reinforcement Learning Agents that are trained to play on th
 We were inspired by the Rainbow paper `Rainbow <https://arxiv.org/abs/1710.02298>`_ and the following  `repo <https://github.com/Curt-Park/rainbow-is-all-you-need>`_.
 All agents beat the deterministic agents reliably.
 
-The PER agent reached 40th place in the tournament and the DDQN agent reached 71th place (out of 142 participants). You can see the tournament results in the .ods file. Our agents are marked yellow.
+The PER agent reached 39th place in the tournament and the DDQN agent reached 71th place (out of 117 participants). You can see the tournament results in the .ods file. Our agents are marked yellow.
 
 
 
