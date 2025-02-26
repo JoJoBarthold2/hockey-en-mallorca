@@ -19,3 +19,5 @@ To install just install the requirements via pip. We advise to use a virtual env
 Copy the weights outside the repo. Then you should be able to use our training to replicate our results.
 We advise to use a GPU for training. 
 Training can take about a day.
+
+If you want to us a Singularity file, we have provided a definition file for you.
