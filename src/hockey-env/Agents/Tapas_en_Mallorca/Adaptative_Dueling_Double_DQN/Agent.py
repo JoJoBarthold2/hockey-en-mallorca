@@ -52,7 +52,7 @@ class Adaptative_Dueling_Double_DQN_better_mem(Agent):
         }
 
         self._config.update(userconfig)
-
+        self.n_gamma = self._config["discount"] ** self._config["n_steps"]
         random.seed(self._config["seed"])
         np.random.seed(self._config["seed"])
         torch.manual_seed(self._config["seed"])
@@ -264,7 +264,7 @@ class Adaptative_Dueling_Double_DQN_better_mem(Agent):
                             n_v_prime = self.Q.maxQ(n_s_prime)
 
                         # Target
-                        n_td_target = n_rew + self._config["discount"] * (1.0 - n_done) * n_v_prime
+                        n_td_target = n_rew + self.n_gamma * (1.0 - n_done) * n_v_prime
 
                     if self.use_prio:
                         fit_loss, elementwise_loss = self.Q.fit(
