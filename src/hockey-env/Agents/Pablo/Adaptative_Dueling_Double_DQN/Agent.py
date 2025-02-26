@@ -27,7 +27,7 @@ class Adaptative_Dueling_Double_DQN(Agent):
             "buffer_size": int(1e5),
             "batch_size": 64,  # Before, 256 default
             "learning_rate": 0.0002,
-            "update_target_every": 5,
+            "update_target_every": 50,
             "use_target_net": True,
             "use_eps_decay": False,
             "eps_decay_mode": "exponential",
@@ -85,10 +85,6 @@ class Adaptative_Dueling_Double_DQN(Agent):
         self._update_target_net()
 
     def get_step(self, state):
-
-        if self.use_noisy:
-            self.Q.reset_noise() 
-            return self.Q.greedyAction(state)
 
         state = np.array(state)
         action = self.Q.greedyAction(state).tolist()
