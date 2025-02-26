@@ -38,6 +38,7 @@ class Prio_DQN_Agent(Agent):
         self.use_more_actions = use_more_actions
         self.env = env
         self.train_iter = 0
+       
 
         self._config = {
             "eps": 0.05,
@@ -69,6 +70,7 @@ class Prio_DQN_Agent(Agent):
             torch.backends.cudnn.benchmark = False
 
         self.n_steps = n_steps
+        self.n_gamma =  self._config["discount"]** self.n_steps 
         self.use_n_step = n_steps > 1
         self.use_prio = use_prio
         if self.use_prio:
@@ -257,7 +259,7 @@ class Prio_DQN_Agent(Agent):
 
                     n_done = np.stack(n_step_data[:, 4])[:, None]
                     n_td_target = (
-                        n_rew + self._config["discount"] * (1.0 - n_done) * n_v_prime
+                        n_rew + self.n_gamma* (1.0 - n_done) * n_v_prime
                     )
                     if self.use_prio:
                         fit_loss, elementwise_loss = self.Q.fit(
